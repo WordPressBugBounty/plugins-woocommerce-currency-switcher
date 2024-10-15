@@ -126,6 +126,8 @@ Also the plugin has ajaxed shortcode/widget of [currency converter](https://demo
 
 📅&nbsp;Compatible with [RnB - WooCommerce Booking & Rental Plugin](https://codecanyon.pluginus.net/item/rnb-woocommerce-rental-booking-system/14835145)
 
+📅&nbsp;Compatible with [WebToffee Product Feed for WooCommerce plugin](https://wordpress.org/plugins/webtoffee-product-feed/)
+
 📅&nbsp;Compatible with [Points and Rewards for WooCommerce by WP Swings](https://wordpress.org/plugins/points-and-rewards-for-woocommerce/)
 
 🔄&nbsp;95% compatibility with different payment gates in multi currency mode, just try it!
