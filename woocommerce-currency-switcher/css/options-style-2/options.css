@@ -3256,8 +3256,8 @@ span[class^='icon-']{
 }
 
 #woocs-head svg {
-    width: 35px;
-    height: 35px;
+    width: 45px;
+    height: 45px;
     position: absolute;
 }
 /* modal*/
@@ -3324,5 +3324,10 @@ nav.woocs__tabs-nav{
 
 .woocommerce-save-button{
     margin-left: 11px;
+}
+
+
+div#wpfooter{
+    position: relative !important;
 }
 

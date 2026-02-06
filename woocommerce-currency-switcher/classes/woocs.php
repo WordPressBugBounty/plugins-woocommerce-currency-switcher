@@ -90,7 +90,7 @@ final class WOOCS {
         }
         //bone  to  convert coupons if added it manualy on  order edit page
         // add_filter('woocommerce_order_class', array($this, 'woocs_order_page_adapt_coupon'), 22, 3);
-        add_action('woocommerce_new_order_item', array($this, 'woocs_order_page_adapt_coupon_new'), 22, 3);
+        add_action('woocommerce_new_order_item', array($this, 'woocommerce_new_order_item'), 22, 3);
 
         add_action('wp_enqueue_scripts', array($this, 'disable_woo_slider_script'), 100);
 //+++
@@ -542,7 +542,60 @@ final class WOOCS {
                     return true;
                 },
             ));
+
+            //Register REST API endpoints for product prices
+            //Endpoint for getting the price of one product
+            register_rest_route('woocs/v3', '/product-price/(?P<product_id>\d+)', array(
+                'methods' => 'GET',
+                'callback' => array($this, 'rest_get_product_price'),
+                'permission_callback' => '__return_true',
+                'args' => array(
+                    'product_id' => array(
+                        'required' => true,
+                        'validate_callback' => function ($param) {
+                            return is_numeric($param);
+                        }
+                    ),
+                    'currency' => array(
+                        'required' => false,
+                        'default' => '',
+                        'sanitize_callback' => 'sanitize_text_field'
+                    ),
+                    'format' => array(
+                        'required' => false,
+                        'default' => 'html',
+                        'sanitize_callback' => 'sanitize_text_field'
+                    )
+                )
+            ));
+
+            //Endpoint for getting prices of multiple products
+            register_rest_route('woocs/v3', '/products-prices', array(
+                'methods' => 'POST',
+                'callback' => array($this, 'rest_get_products_prices'),
+                'permission_callback' => '__return_true',
+                'args' => array(
+                    'product_ids' => array(
+                        'required' => true,
+                        'validate_callback' => function ($param) {
+                            return is_array($param) && !empty($param);
+                        }
+                    ),
+                    'currency' => array(
+                        'required' => false,
+                        'default' => '',
+                        'sanitize_callback' => 'sanitize_text_field'
+                    ),
+                    'format' => array(
+                        'required' => false,
+                        'default' => 'html',
+                        'sanitize_callback' => 'sanitize_text_field'
+                    )
+                )
+            ));
         });
+
+        //+++
 
         if (function_exists('is_admin') AND is_admin()) {
             new WOOCS_reports();
@@ -550,6 +603,22 @@ final class WOOCS {
         $act_stat = new woocs_woo_stat();
         $act_stat->init();
         //***
+
+
+        add_action('wp_ajax_woocommerce_calc_line_taxes', function () {
+            if (!empty($_POST['order_id']) && wp_doing_ajax()) {
+                $order_id = intval($_POST['order_id']);
+                $order = wc_get_order($order_id);
+
+                if ($order) {
+                    $currency = $order->get_currency();
+
+                    if ($this->is_fixed_enabled) {
+                        $this->current_currency = $currency;
+                    }
+                }
+            }
+        }, 5);
 
         add_action('admin_init', array($this, 'set_currency_on_order_page'));
     }
@@ -824,7 +893,7 @@ final class WOOCS {
             foreach ($data as $k => $d) {
                 if (isset($d['id'])) {
                     if (in_array($d['id'], ['woocommerce_currency', 'woocommerce_price_num_decimals', 'woocommerce_currency_pos'])) {
-                        // unset($data[$k]); 
+                        // unset($data[$k]);
                     }
 
                     if ($d['id'] === 'pricing_options') {
@@ -1059,7 +1128,7 @@ final class WOOCS {
 
         if ($this->notes_for_free) {
 
-            $buttons[] = '<a target="_blank" class="woocs-go-pro" href="https://pluginus.net/affiliate/woocommerce-currency-switcher">' . esc_html__('Go Pro!', 'woocommerce-currency-switcher') . '</a>';
+            $buttons[] = '<a target="_blank" class="woocs-go-pro" href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217">' . esc_html__('Go Pro!', 'woocommerce-currency-switcher') . '</a>';
         }
 
         return array_merge($buttons, $links);
@@ -1662,7 +1731,6 @@ final class WOOCS {
         if (!$suppress_filters) {
             $currencies = apply_filters('woocs_currency_data_manipulation', $currencies);
         }
-
 
         if (count($currencies) > 2) {
             $currencies = array_slice($currencies, 0, 2);
@@ -2906,7 +2974,7 @@ final class WOOCS {
 //***************************** email actions
 
     public function woocommerce_email_actions($email_actions) {
-        $_REQUEST['woocs_order_emails_is_sending'] = 1;
+        //$_REQUEST['woocs_order_emails_is_sending'] = 1;//https://wordpress.org/support/topic/fox-plugin-webhook-json-data-polluted-by-woocs_order_emails_is_sending/#post-18779498
         if (isset($_REQUEST['woocs_in_order_currency'])) {
             $this->current_currency = sanitize_text_field($_REQUEST['woocs_in_order_currency']);
             //$this->default_currency = $_REQUEST['woocs_in_order_currency'];
@@ -3323,7 +3391,7 @@ final class WOOCS {
             $price_html = $this->woocs_add_approx_to_price($price_html, $product);
         }
 
-        return $price_html;
+        return apply_filters('woocs_price_html', $price_html);
     }
 
     public function woocommerce_coupon_get_discount_amount($discount, $discounting_amount, $cart_item, $single, $coupon) {
@@ -3806,7 +3874,8 @@ final class WOOCS {
 //wp-content\plugins\woocommerce\includes\shipping\free-shipping\class-wc-shipping-free-shipping.php #192
     public function woocommerce_shipping_free_shipping_is_available($is_available, $package, $this_shipping = null) {
         global $woocommerce;
-        $currencies = $this->get_currencies(); {
+        $currencies = $this->get_currencies();
+        {
             $has_coupon = false;
             $has_met_min_amount = false;
 
@@ -5195,7 +5264,7 @@ final class WOOCS {
             case 'USD':
                 $default['EUR'] = array(
                     'name' => 'EUR',
-                    'rate' => 0.91,
+                    'rate' => 0.86,
                     'symbol' => '&euro;',
                     'position' => 'left_space',
                     'is_etalon' => 0,
@@ -5218,12 +5287,12 @@ final class WOOCS {
                     'hide_on_front' => 0,
                     'flag' => '',
                 );
-                $default['USD']['rate'] = 0.91;
+                $default['USD']['rate'] = 0.86;
                 break;
             default :
                 $default[$wc_currency] = array(
                     'name' => $wc_currency,
-                    'rate' => 0.91,
+                    'rate' => 0.86,
                     'symbol' => $this->get_default_currency_symbol($wc_currency),
                     'position' => 'left_space',
                     'is_etalon' => 1,
@@ -5749,9 +5818,9 @@ final class WOOCS {
                 <button onclick="javascript: pn_<?php echo esc_attr($slug) ?>_dismiss_review(1); void(0);" title="<?php esc_html_e('Later', 'woocommerce-currency-switcher'); ?>" class="notice-dismiss"></button>
                 <div id="pn_<?php echo esc_attr($slug) ?>_review_suggestion">
                     <p>
-                        <?php esc_html_e('Hi! Are you enjoying using ', 'woocommerce-currency-switcher'); ?>
+                            <?php esc_html_e('Hi! Are you enjoying using ', 'woocommerce-currency-switcher'); ?>
                         <i>
-                            <?php esc_html_e('FOX - Currency Switcher Professional for WooCommerce?', 'woocommerce-currency-switcher'); ?>
+            <?php esc_html_e('FOX - Currency Switcher Professional for WooCommerce?', 'woocommerce-currency-switcher'); ?>
                         </i>
                     </p>
                     <p><a href="javascript: pn_<?php echo esc_attr($slug) ?>_set_review(1); void(0);"><?php esc_html_e('Yes, I love it', 'woocommerce-currency-switcher'); ?></a> 🙂 | <a href="javascript: pn_<?php echo esc_attr($slug) ?>_set_review(0); void(0);"><?php esc_html_e('Not really...', 'woocommerce-currency-switcher'); ?></a></p>
@@ -5761,7 +5830,7 @@ final class WOOCS {
                     <p>
                         <?php esc_html_e('That\'s awesome! Could you please do us a BIG favor and give it a 5-star rating on ', 'woocommerce-currency-switcher'); ?>
                         <?php echo esc_html($on) ?>
-                        <?php esc_html_e(' to help us spread the word and boost our motivation?', 'woocommerce-currency-switcher'); ?>
+            <?php esc_html_e(' to help us spread the word and boost our motivation?', 'woocommerce-currency-switcher'); ?>
                     </p>
 
                     <p><strong>~ PluginUs.Net developers team</strong></p>
@@ -5819,13 +5888,48 @@ final class WOOCS {
         return 1;
     }
 
-    public function woocs_order_page_adapt_coupon_new($item_id, $item, $order_id) {
-        if (wp_doing_ajax() && isset($_POST['action']) && 'woocommerce_add_coupon_discount' == $_POST['action']) {
-            $currencies = $this->get_currencies();
-            $order = wc_get_order($order_id);
-            $_order_currency = $order->get_currency();
-            if (isset($currencies[$_order_currency])) {
-                $this->set_currency($_order_currency);
+    public function woocommerce_new_order_item($item_id, $item, $order_id) {
+        if (wp_doing_ajax() && isset($_POST['action'])) {
+
+            switch ($_POST['action']) {
+                case 'woocommerce_add_coupon_discount':
+                    $currencies = $this->get_currencies();
+                    $order = wc_get_order($order_id);
+                    $_order_currency = $order->get_currency();
+
+                    if (isset($currencies[$_order_currency])) {
+                        $this->set_currency($_order_currency);
+                    }
+                    break;
+
+                case 'woocommerce_add_order_item':
+                    if ($this->is_fixed_enabled) {
+                        $currencies = $this->get_currencies();
+                        $order = wc_get_order($order_id);
+                        $_order_currency = $order->get_currency();
+
+                        if (isset($currencies[$_order_currency])) {
+                            $this->set_currency($_order_currency);
+                            $product_id = $item->get_product_id();
+                            $_order_currency = strtoupper($_order_currency);
+
+                            $fixed_regular_price = floatval(get_post_meta($product_id, "_woocs_regular_price_{$_order_currency}", true) ?? 0);
+                            if ($fixed_regular_price) {
+                                $fixed_sale_price = floatval(get_post_meta($product_id, "_woocs_sale_price_{$_order_currency}", true) ?? 0);
+                                $final_price = $fixed_sale_price > 0 ? $fixed_sale_price : $fixed_regular_price;
+
+                                $item->set_subtotal($fixed_regular_price);
+                                $item->set_total($final_price);
+                                $item->save();
+
+                                $order = wc_get_order($order_id);
+                                $order->calculate_taxes();
+                                $order->calculate_totals(false);
+                                $order->save();
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -5892,7 +5996,7 @@ final class WOOCS {
 
     /**
      * currency switching in the order list
-     * 
+     *
      * @param string $buyer
      * @param WC_Order $order
      * @return string   $buyer Buyer name.
@@ -5963,20 +6067,277 @@ final class WOOCS {
         ?>
         <div class="notice notice-info woocs-pos-relative" id="цщщсы_incompatibility_plugin">
             <p>
-                <?php esc_html_e("Oh no! It looks like you are using two different currency switching plugins and this may lead to incorrect conversion and payment problems", 'woocommerce-currency-switcher'); ?>
+        <?php esc_html_e("Oh no! It looks like you are using two different currency switching plugins and this may lead to incorrect conversion and payment problems", 'woocommerce-currency-switcher'); ?>
             </p>
             <span>
                 <b>
-                    <?php esc_html_e("Incompatible plugin:", 'woocommerce-currency-switcher'); ?>
+        <?php esc_html_e("Incompatible plugin:", 'woocommerce-currency-switcher'); ?>
                 </b>
             </span>
             <span>
                 <i><?php echo esc_html($incompatible_plugin); ?></i>
             </span>
             <p>
-                <?php esc_html_e("We strongly recommend disabling one of these plugins for stable operation of your site.", 'woocommerce-currency-switcher'); ?>
+        <?php esc_html_e("We strongly recommend disabling one of these plugins for stable operation of your site.", 'woocommerce-currency-switcher'); ?>
             </p>
-        </div>	
+        </div>
         <?php
+    }
+
+    /**
+     * REST API callback: Get single product price
+     * 
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public function rest_get_product_price($request) {
+        $product_id = intval($request['product_id']);
+        $currency = $request->get_param('currency');
+        $format = $request->get_param('format');
+        $product = wc_get_product($product_id);
+
+        if (!$product) {
+            return new WP_Error('product_not_found', __('Product not found', 'woocommerce-currency-switcher'), array('status' => 404));
+        }
+
+        //We set the currency if transferred
+        $original_currency = $this->current_currency;
+        if (!empty($currency)) {
+            $currencies = $this->get_currencies();
+            if (isset($currencies[$currency])) {
+                $this->current_currency = $currency;
+            }
+        }
+
+        //We get the price depending on the format
+        $result = $this->get_product_price_data($product, $format);
+
+        //We return the original currency
+        $this->current_currency = $original_currency;
+
+        return rest_ensure_response($result);
+    }
+
+    /**
+     * REST API callback: Get multiple products prices
+     * 
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public function rest_get_products_prices($request) {
+        $product_ids = $request->get_param('product_ids');
+        $currency = $request->get_param('currency');
+        $format = $request->get_param('format');
+
+        //We set the currency if transferred
+        $original_currency = $this->current_currency;
+        if (!empty($currency)) {
+            $currencies = $this->get_currencies();
+            if (isset($currencies[$currency])) {
+                $this->current_currency = $currency;
+            }
+        }
+
+        $results = array();
+
+        foreach ($product_ids as $product_id) {
+            $product_id = intval($product_id);
+            $product = wc_get_product($product_id);
+
+            if ($product) {
+                $results[$product_id] = $this->get_product_price_data($product, $format);
+            } else {
+                $results[$product_id] = array(
+                    'error' => true,
+                    'message' => __('Product not found', 'woocommerce-currency-switcher')
+                );
+            }
+        }
+
+        //We return the original currency
+        $this->current_currency = $original_currency;
+
+        return rest_ensure_response(array(
+            'currency' => $currency ? $currency : $this->current_currency,
+            'products' => $results
+        ));
+    }
+
+    /**
+     * Get product price data with all necessary conversions
+     * Uses the same logic as raw_woocommerce_price
+     * 
+     * @param WC_Product $product
+     * @param string $format 'html' or 'raw'
+     * @return array
+     */
+    private function get_product_price_data($product, $format = 'html') {
+
+        $currencies = $this->get_currencies();
+        $current_currency = $this->current_currency;
+
+        //We get precision
+        if (in_array($current_currency, $this->no_cents)) {
+            $precision = 0;
+        } else {
+            if ($current_currency != $this->default_currency) {
+                $precision = $this->get_currency_price_num_decimals($current_currency, $this->price_num_decimals);
+            } else {
+                $precision = $this->get_currency_price_num_decimals($this->default_currency, $this->price_num_decimals);
+            }
+        }
+
+        $precision = apply_filters('woocs_precision_on_calc', $precision, $current_currency);
+
+        $result = array(
+            'product_id' => $product->get_id(),
+            'product_type' => $product->get_type(),
+            'currency' => $current_currency,
+            'currency_symbol' => isset($currencies[$current_currency]['symbol']) ? $currencies[$current_currency]['symbol'] : '$',
+            'currency_position' => isset($currencies[$current_currency]['position']) ? $currencies[$current_currency]['position'] : 'left',
+            'precision' => $precision
+        );
+
+        //For variable products
+        if ($product->is_type('variable')) {
+            $variations = $product->get_available_variations();
+            $variation_prices = array();
+
+            foreach ($variations as $variation) {
+                $variation_id = $variation['variation_id'];
+                $variation_obj = wc_get_product($variation_id);
+
+                if ($variation_obj) {
+                    $price = $variation_obj->get_price();
+                    $regular_price = $variation_obj->get_regular_price();
+                    $sale_price = $variation_obj->get_sale_price();
+
+                    //We apply fixed prices if included
+                    if ($this->is_fixed_enabled && $this->is_multiple_allowed) {
+                        $tmp_price = $this->_get_product_fixed_price($variation_obj, 'variation', $price, $precision);
+                        if ((int) $tmp_price !== -1) {
+                            $price = $tmp_price;
+                            $regular_price = $tmp_price;
+                            $sale_price = '';
+                        }
+                    }
+
+                    //We apply GeoIP prices if enabled
+                    if ($this->is_geoip_manipulation) {
+                        $product_emulator = (object) array('id' => $variation_obj->get_id());
+                        $price = $this->_get_product_geo_price($product_emulator, $price);
+                    }
+
+                    //Apply user role prices if enabled
+                    if ($this->is_fixed_user_role) {
+                        $tmp_price = $this->_get_product_fixed_user_role_price($variation_obj, 'variation', $price, $precision);
+                        if ((int) $tmp_price !== -1) {
+                            $price = $tmp_price;
+                        }
+                    }
+
+                    //We convert at the exchange rate if there are no fixed prices
+                    if ($current_currency != $this->default_currency && isset($currencies[$current_currency])) {
+                        if ($price && !is_numeric($tmp_price)) {
+                            $price = number_format(floatval((float) $price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                        }
+                        if ($regular_price) {
+                            $regular_price = number_format(floatval((float) $regular_price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                        }
+                        if ($sale_price) {
+                            $sale_price = number_format(floatval((float) $sale_price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                        }
+                    }
+
+                    $variation_prices[$variation_id] = array(
+                        'price' => $price,
+                        'regular_price' => $regular_price,
+                        'sale_price' => $sale_price
+                    );
+                }
+            }
+
+            //We get the min/max prices
+            $prices_array = array_column($variation_prices, 'price');
+            $result['min_price'] = !empty($prices_array) ? min($prices_array) : 0;
+            $result['max_price'] = !empty($prices_array) ? max($prices_array) : 0;
+            $result['variations'] = $variation_prices;
+
+            if ($format === 'html') {
+                $result['price_html'] = $product->get_price_html();
+            }
+        } else {
+            //For simple products
+            $price = $product->get_price();
+            $regular_price = $product->get_regular_price();
+            $sale_price = $product->get_sale_price();
+
+            $is_custom_price = false;
+
+            //We apply fixed prices if included
+            if ($this->is_fixed_enabled && $this->is_multiple_allowed) {
+                $type = $this->fixed->get_price_type($product, $price);
+                $tmp_price = $this->_get_product_fixed_price($product, 'single', $price, $precision, $type);
+
+                if ((int) $tmp_price !== -1) {
+                    $price = $tmp_price;
+                    $is_custom_price = true;
+
+                    //We also receive regular and sale fixed prices.
+                    if ($regular_price) {
+                        $tmp_regular = $this->_get_product_fixed_price($product, 'single', $regular_price, $precision, 'regular');
+                        if ((int) $tmp_regular !== -1) {
+                            $regular_price = $tmp_regular;
+                        }
+                    }
+                    if ($sale_price) {
+                        $tmp_sale = $this->_get_product_fixed_price($product, 'single', $sale_price, $precision, 'sale');
+                        if ((int) $tmp_sale !== -1) {
+                            $sale_price = $tmp_sale;
+                        }
+                    }
+                }
+            }
+
+            //We apply GeoIP prices if enabled
+            if ($this->is_geoip_manipulation && !$is_custom_price) {
+                $product_emulator = (object) array('id' => $product->get_id());
+                $price = $this->_get_product_geo_price($product_emulator, $price);
+            }
+
+            //Apply user role prices if enabled
+            if ($this->is_fixed_user_role) {
+                $tmp_price = $this->_get_product_fixed_user_role_price($product, 'single', $price, $precision);
+                if ((int) $tmp_price !== -1) {
+                    $price = $tmp_price;
+                    $is_custom_price = false;
+                }
+            }
+
+            //We convert at the exchange rate if there are no fixed prices
+            if (!$is_custom_price && $current_currency != $this->default_currency) {
+                if (isset($currencies[$current_currency]) && $currencies[$current_currency] != NULL) {
+                    if ($price) {
+                        $price = number_format(floatval((float) $price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                    }
+                    if ($regular_price) {
+                        $regular_price = number_format(floatval((float) $regular_price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                    }
+                    if ($sale_price) {
+                        $sale_price = number_format(floatval((float) $sale_price * (float) $currencies[$current_currency]['rate']), $precision, $this->decimal_sep, '');
+                    }
+                }
+            }
+
+            $result['price'] = $price;
+            $result['regular_price'] = $regular_price;
+            $result['sale_price'] = $sale_price;
+
+            if ($format === 'html') {
+                $result['price_html'] = $product->get_price_html();
+            }
+        }
+
+        return $result;
     }
 }

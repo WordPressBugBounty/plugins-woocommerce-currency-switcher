@@ -32,8 +32,8 @@ class WOOCS_Subscriptions_Compatibility {
           [$this, 'fix_new_order_items'], 2, 3);
 
        // Variable subscription price HTML
-       //add_filter('woocommerce_variable_subscription_price_html',
-       //   [$this, 'fix_variable_subscription_price_html'], 10, 2);
+       add_filter('woocommerce_variable_subscription_price_html',
+          [$this, 'fix_variable_subscription_price_html'], 10, 2);
 
        // Subscription product price string
        add_filter('woocommerce_subscriptions_product_price_string',
@@ -96,7 +96,7 @@ class WOOCS_Subscriptions_Compatibility {
           $price = $prices['price'][$min_price_variation_id];
        }
        $price = 'incl' == $tax_display_mode ? wcs_get_price_including_tax( $product, array( 'price' => $price ) ) : wcs_get_price_excluding_tax( $product, array( 'price' => $price ) );
-       $price = $product->get_price_prefix( $prices ) . wc_price( $price ) . $product->get_price_suffix();
+       $price =  __('From', 'woocommerce') . wc_price( $price ) . $product->get_price_suffix();
        $price = apply_filters( 'woocommerce_variable_price_html', $price, $product );
        $price = \WC_Subscriptions_Product::get_price_string( $product, array( 'price' => $price ) );
 

@@ -850,7 +850,7 @@ global $WOOCS;
                                                     ?>
                                                 </div>
                                                 <div class="woocs__item">
-                                                    <a href="https://currency-switcher.com/video-tutorials#video_YHDQZG8GS6w" target="_blank"
+                                                    <a href="https://currency-switcher.com/video#video_YHDQZG8GS6w" target="_blank"
                                                        class="woocs-btn woocs-btn-icon" title="<?php esc_html_e('Watch video instructions', 'woocommerce-currency-switcher') ?>">
                                                         <span class="icon-video"></span>
                                                     </a>
@@ -962,13 +962,13 @@ global $WOOCS;
                                                     <?php echo wp_kses(draw_switcher23('woocs_is_geoip_manipulation', get_option('woocs_is_geoip_manipulation', 0), 'woocs_blind_option'), get_allowed_html_switcher23()); ?>
                                                 </div>
                                                 <div class="woocs__item">
-                                                    <a href="https://currency-switcher.com/video-tutorials#video_PZugTH80-Eo" target="_blank"
+                                                    <a href="https://currency-switcher.com/video#video_PZugTH80-Eo" target="_blank"
                                                        class="woocs-btn woocs-btn-icon" title="<?php esc_html_e('Watch video instructions', 'woocommerce-currency-switcher') ?>">
                                                         <span class="icon-video"></span>
                                                     </a>
                                                 </div>
                                                 <div class="woocs__item">
-                                                    <a href="https://currency-switcher.com/video-tutorials#video_zh_LVqKADBU" target="_blank"
+                                                    <a href="https://currency-switcher.com/video#video_zh_LVqKADBU" target="_blank"
                                                        class="woocs-btn woocs-btn-icon" title="<?php esc_html_e('a hint', 'woocommerce-currency-switcher') ?>">
                                                         <span class="icon-video"></span>
                                                     </a>
@@ -1862,7 +1862,7 @@ global $WOOCS;
                                                                             </div>
                                                                             <div class="woocs-ms-4">
                                                                                 <h5 class="woocs-h5 woocs-mb-1">
-                                                                                    <a class="woocs-text-dark" href="https://currency-switcher.com/video-tutorials/" target="_blank"><?php echo esc_html__('Video tutorials', 'woocommerce-currency-switcher') ?></a>
+                                                                                    <a class="woocs-text-dark" href="https://currency-switcher.com/video/" target="_blank"><?php echo esc_html__('Video tutorials', 'woocommerce-currency-switcher') ?></a>
                                                                                 </h5>
                                                                                 <p><?php esc_html_e('Watch video tutorials about FOX features to use its functionality in full force', 'woocommerce-currency-switcher') ?></p>
                                                                             </div>
@@ -1886,6 +1886,10 @@ global $WOOCS;
                                                                         <li><a href="https://currency-switcher.com/i-cant-add-flags-what-to-do/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("I cant add flags! What to do?", 'woocommerce-currency-switcher') ?></a></li>
                                                                         <li><a href="https://currency-switcher.com/using-geolocation-causes-problems-doesnt-seem-to-work-for-me/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("Using Geolocation causes problems, doesn’t seem to work for me", 'woocommerce-currency-switcher') ?></a></li>
                                                                         <li><a href="https://currency-switcher.com/how-to-insert-currency-switcher-into-site-menu/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("How to insert currency switcher into site menu?", 'woocommerce-currency-switcher') ?></a></li>
+                                                                        <li><a href="https://currency-switcher.com/how-to-fix-woocommerce-analytics-reports-for-multi-currency-stores/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("How to Fix WooCommerce Analytics Reports for Multi-Currency Stores?", 'woocommerce-currency-switcher') ?></a></li>
+                                                                        <li><a href="https://currency-switcher.com/custom-currency-code/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("Custom Currency Code", 'woocommerce-currency-switcher') ?></a></li>
+                                                                        <li><a href="https://currency-switcher.com/how-to-round-prices-to-0-cents/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg><?php esc_html_e("How to round prices to 0 cents", 'woocommerce-currency-switcher') ?></a></li>
+                                                                        <li><a href="https://currency-switcher.com/function/rest-api/" target="_blank" class="woocs-text-decoration-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="woocs-fea woocs-icon-sm woocs-me-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>REST API</a></li>
                                                                     </ul>
                                                                 </div>
 
@@ -1894,9 +1898,9 @@ global $WOOCS;
                                                                 </div>
 
                                                                 <ul class="woocs__features-gallery woocs__col-6">
-                                                                    <li><a target="_blank" href="https://pluginus.net/affiliate/woocommerce-products-filter"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woof_banner.png" /></a></li>
-                                                                    <li><a target="_blank" href="https://pluginus.net/affiliate/woocommerce-bulk-editor"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woobe_banner.png" /></a></li>
-                                                                    <li><a target="_blank" href="https://pluginus.net/affiliate/woot-woocommerce-products-tables"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woot_banner.png" /></a></li>
+                                                                    <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woof_banner.png" /></a></li>
+                                                                    <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woobe_banner.png" /></a></li>
+                                                                    <li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woocs-rounded" width="300" src="<?php echo esc_attr(WOOCS_LINK) ?>img/woot_banner.png" /></a></li>
                                                                 </ul>
 
 
@@ -2048,7 +2052,7 @@ global $WOOCS;
                                                                 <?php esc_html_e("you can operate with 2 ANY currencies only!", 'woocommerce-currency-switcher') ?>
                                                             </b> 
                                                             <?php esc_html_e(" If you want to use more currencies", 'woocommerce-currency-switcher') ?>
-                                                            <a href="https://pluginus.net/affiliate/woocommerce-currency-switcher" target="_blank">
+                                                            <a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" target="_blank">
                                                                 <?php esc_html_e(" you can make upgrade to the premium version", 'woocommerce-currency-switcher') ?>
                                                             </a>
                                                             <?php esc_html_e(" of the plugin", 'woocommerce-currency-switcher') ?>
@@ -2059,22 +2063,22 @@ global $WOOCS;
                                                                 <tr>
                                                                     <td>
                                                                         <h6 class="woocs_red"><?php esc_html_e("UPGRADE to Full version", 'woocommerce-currency-switcher') ?>:</h6>
-                                                                        <a href="https://pluginus.net/affiliate/woocommerce-currency-switcher" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woocs_banner.png" alt="<?php esc_html_e("full version of the plugin", 'woocommerce-currency-switcher'); ?>" /></a>
+                                                                        <a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woocs_banner.png" alt="<?php esc_html_e("full version of the plugin", 'woocommerce-currency-switcher'); ?>" /></a>
                                                                     </td>
 
                                                                     <td>
                                                                         <h6><?php esc_html_e("HUSKY - Products Filter", 'woocommerce-currency-switcher') ?>:</h6>
-                                                                        <a href="https://pluginus.net/affiliate/woocommerce-products-filter" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woof_banner.png" alt="<?php esc_html_e("WOOF - WooCommerce Products Filter", 'woocommerce-currency-switcher'); ?>" /></a>
+                                                                        <a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woof_banner.png" alt="<?php esc_html_e("WOOF - WooCommerce Products Filter", 'woocommerce-currency-switcher'); ?>" /></a>
                                                                     </td>
 
                                                                     <td>
                                                                         <h6><?php esc_html_e("BEAR - Bulk Editor", 'woocommerce-currency-switcher') ?>:</h6>
-                                                                        <a href="https://pluginus.net/affiliate/woocommerce-bulk-editor" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woobe_banner.png" alt="<?php esc_html_e("WOOBE - WooCommerce Bulk Editor Professional", 'woocommerce-currency-switcher'); ?>" /></a>
+                                                                        <a href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woobe_banner.png" alt="<?php esc_html_e("WOOBE - WooCommerce Bulk Editor Professional", 'woocommerce-currency-switcher'); ?>" /></a>
                                                                     </td>
 
                                                                     <td>
                                                                         <h6><?php esc_html_e("WOOT Products Tables", 'woocommerce-currency-switcher') ?>:</h6>
-                                                                        <a href="https://pluginus.net/affiliate/woot-woocommerce-products-tables" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woot_banner.png" alt="<?php esc_html_e("WOOT - WooCommerce Active Products Tables", 'woocommerce-currency-switcher'); ?>" /></a>
+                                                                        <a href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580" target="_blank"><img src="<?php echo esc_attr(WOOCS_LINK) ?>img/woot_banner.png" alt="<?php esc_html_e("WOOT - WooCommerce Active Products Tables", 'woocommerce-currency-switcher'); ?>" /></a>
                                                                     </td>
 
                                                                 </tr>

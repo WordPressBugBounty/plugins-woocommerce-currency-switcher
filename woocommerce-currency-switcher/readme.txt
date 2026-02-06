@@ -3,9 +3,9 @@ Contributors: RealMag777
 Donate link: https://pluginus.net/affiliate/woocommerce-currency-switcher
 Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.3.1
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,7 +72,7 @@ Also the plugin has ajaxed shortcode/widget of [currency converter](https://demo
 
 🌍&nbsp;**Individual GeoIP rules for each product**:   super feature which allows for different countries show different prices in different currencies! This functionality allows to realize [WooCommerce Price Based on Country](https://currency-switcher.com/woocommerce-price-based-on-country/) functionality
 
-📈&nbsp;**Individual fixed prices rules for each product**: feature which allows for each product set fixed price for each currency, in this case for the product will not be applied conversion by rate, [watch video](https://currency-switcher.com/video-tutorials#video_PZugTH80-Eo)
+📈&nbsp;**Individual fixed prices rules for each product**: feature which allows for each product set fixed price for each currency, in this case for the product will not be applied conversion by rate, [watch video](https://currency-switcher.com/video#video_PZugTH80-Eo)
 
 🗺&nbsp;**GEO IP rules for visitors local currency detection**: this feature is more targeted and allows to set currency of prices for the site visitors in their native currency when they visited the shop for the first time. Currency changes automatically according to the visitor IP, and even more - if to enable option '**Checkout by GeoIP rules**' your customers always will buy products in their local currency!
 
@@ -117,6 +117,8 @@ Also the plugin has ajaxed shortcode/widget of [currency converter](https://demo
 👍&nbsp;**Easy to use for administrators and shop customers**: install, set settings for couple of minutes and let your shop make more money!
 
 🤖&nbsp;**FOX is chatGPT friendly plugin** you can ask help to chat gpt about the plugin features using the plugin former name WOOCS, example: "How to use [woocs] shortcode?"
+
+🔌&nbsp;[REST API](https://currency-switcher.com/function/rest-api/)
 
 🌐&nbsp;Compatible with [WPML](https://wpml.org/plugin/woocommerce-currency-switcher/)
 
@@ -192,6 +194,11 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.4 =
+* set of small fixes
+* hook [https://currency-switcher.com/hook/woocs_price_html/](woocs_price_html)
+* [https://currency-switcher.com/function/rest-api/](REST API)
 
 = 1.4.3.1 =
 * some small fixes
