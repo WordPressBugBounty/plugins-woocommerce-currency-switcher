@@ -479,6 +479,8 @@ final class WOOCS {
         $this->cron = new PN_WP_CRON_WOOCS('woocs_rates_wpcron');
         $this->wp_cron_period = (int) $this->get_woocs_cron_schedules($this->rate_auto_update);
         add_action('init', array($this, 'make_rates_auto_update')); // auto update rate
+        add_action('admin_init', array($this, 'make_rates_auto_update')); // auto update rate
+        add_action('rest_api_init', array($this, 'make_rates_auto_update')); // auto update rate
 //***
         if ($this->is_fixed_enabled OR $this->is_geoip_manipulation) {
             $this->fixed = new WOOCS_FIXED_PRICE();
@@ -1057,6 +1059,7 @@ final class WOOCS {
         //***
 
         update_option('woocs', $currencies);
+        do_action('woocs_sheduler_rates_updated', $currencies);
     }
 
     public function init_geo_currency() {
@@ -1833,7 +1836,7 @@ final class WOOCS {
             //remove sale prices if they equal to regular prices
             foreach ($prices_array['regular_price'] as $key => $value) {
                 if ($value === $prices_array['sale_price'][$key]) {
-                    
+
                 }
             }
 
@@ -2008,7 +2011,7 @@ final class WOOCS {
                 try {
                     $product_emulator = (object) array('id' => $product->get_id());
                 } catch (Exception $e) {
-                    
+
                 }
 
                 $price = $this->_get_product_geo_price($product_emulator, $price);
@@ -3727,7 +3730,7 @@ final class WOOCS {
                 }
             }
         } catch (Exception $e) {
-            
+
         }
 
         //***
@@ -3859,7 +3862,7 @@ final class WOOCS {
 //***
 //https://www.skyverge.com/blog/get-a-list-of-woocommerce-sale-products/
         if ($product->product_type == 'variable') {
-            
+
         } else {
             if ($sale_price !== $regular_price AND ($price === $sale_price)) {
                 $is_sale = true;
@@ -3874,8 +3877,7 @@ final class WOOCS {
 //wp-content\plugins\woocommerce\includes\shipping\free-shipping\class-wc-shipping-free-shipping.php #192
     public function woocommerce_shipping_free_shipping_is_available($is_available, $package, $this_shipping = null) {
         global $woocommerce;
-        $currencies = $this->get_currencies();
-        {
+        $currencies = $this->get_currencies(); {
             $has_coupon = false;
             $has_met_min_amount = false;
 
@@ -5818,9 +5820,9 @@ final class WOOCS {
                 <button onclick="javascript: pn_<?php echo esc_attr($slug) ?>_dismiss_review(1); void(0);" title="<?php esc_html_e('Later', 'woocommerce-currency-switcher'); ?>" class="notice-dismiss"></button>
                 <div id="pn_<?php echo esc_attr($slug) ?>_review_suggestion">
                     <p>
-                            <?php esc_html_e('Hi! Are you enjoying using ', 'woocommerce-currency-switcher'); ?>
+                        <?php esc_html_e('Hi! Are you enjoying using ', 'woocommerce-currency-switcher'); ?>
                         <i>
-            <?php esc_html_e('FOX - Currency Switcher Professional for WooCommerce?', 'woocommerce-currency-switcher'); ?>
+                            <?php esc_html_e('FOX - Currency Switcher Professional for WooCommerce?', 'woocommerce-currency-switcher'); ?>
                         </i>
                     </p>
                     <p><a href="javascript: pn_<?php echo esc_attr($slug) ?>_set_review(1); void(0);"><?php esc_html_e('Yes, I love it', 'woocommerce-currency-switcher'); ?></a> 🙂 | <a href="javascript: pn_<?php echo esc_attr($slug) ?>_set_review(0); void(0);"><?php esc_html_e('Not really...', 'woocommerce-currency-switcher'); ?></a></p>
@@ -5830,7 +5832,7 @@ final class WOOCS {
                     <p>
                         <?php esc_html_e('That\'s awesome! Could you please do us a BIG favor and give it a 5-star rating on ', 'woocommerce-currency-switcher'); ?>
                         <?php echo esc_html($on) ?>
-            <?php esc_html_e(' to help us spread the word and boost our motivation?', 'woocommerce-currency-switcher'); ?>
+                        <?php esc_html_e(' to help us spread the word and boost our motivation?', 'woocommerce-currency-switcher'); ?>
                     </p>
 
                     <p><strong>~ PluginUs.Net developers team</strong></p>
@@ -6067,18 +6069,18 @@ final class WOOCS {
         ?>
         <div class="notice notice-info woocs-pos-relative" id="цщщсы_incompatibility_plugin">
             <p>
-        <?php esc_html_e("Oh no! It looks like you are using two different currency switching plugins and this may lead to incorrect conversion and payment problems", 'woocommerce-currency-switcher'); ?>
+                <?php esc_html_e("Oh no! It looks like you are using two different currency switching plugins and this may lead to incorrect conversion and payment problems", 'woocommerce-currency-switcher'); ?>
             </p>
             <span>
                 <b>
-        <?php esc_html_e("Incompatible plugin:", 'woocommerce-currency-switcher'); ?>
+                    <?php esc_html_e("Incompatible plugin:", 'woocommerce-currency-switcher'); ?>
                 </b>
             </span>
             <span>
                 <i><?php echo esc_html($incompatible_plugin); ?></i>
             </span>
             <p>
-        <?php esc_html_e("We strongly recommend disabling one of these plugins for stable operation of your site.", 'woocommerce-currency-switcher'); ?>
+                <?php esc_html_e("We strongly recommend disabling one of these plugins for stable operation of your site.", 'woocommerce-currency-switcher'); ?>
             </p>
         </div>
         <?php
@@ -6086,7 +6088,7 @@ final class WOOCS {
 
     /**
      * REST API callback: Get single product price
-     * 
+     *
      * @param WP_REST_Request $request
      * @return WP_REST_Response|WP_Error
      */
@@ -6120,7 +6122,7 @@ final class WOOCS {
 
     /**
      * REST API callback: Get multiple products prices
-     * 
+     *
      * @param WP_REST_Request $request
      * @return WP_REST_Response|WP_Error
      */
@@ -6166,7 +6168,7 @@ final class WOOCS {
     /**
      * Get product price data with all necessary conversions
      * Uses the same logic as raw_woocommerce_price
-     * 
+     *
      * @param WC_Product $product
      * @param string $format 'html' or 'raw'
      * @return array

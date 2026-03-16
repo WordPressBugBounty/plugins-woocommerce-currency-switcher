@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,6 +194,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.5 =
+* added hook woocs_sheduler_rates_updated
 
 = 1.4.4 =
 * set of small fixes
