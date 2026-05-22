@@ -278,7 +278,8 @@ jQuery(function ($) {
 
             var data = {
                 action: "woocs_add_currencies",
-                new_currencies: currencies
+                new_currencies: currencies,
+                currency_nonce: jQuery('input[name="woocs_currency_nonce"]').val()
             };
             jQuery.post(ajaxurl, data, function (request) {
                 try {
@@ -310,13 +311,13 @@ jQuery(function ($) {
         jQuery(this).parents('tr').find("input[name='woocs_rate_plus[]']").val('');
         //instant save
         var currency_name = jQuery(this).parents('tr').find('input[name="woocs_name[]"]').val();
-	var currency_nonce =jQuery('input[name="woocs_currency_nonce"]').val(); 
+
         if (currency_name.length) {
             woocs_show_stat_info_popup(woocs_lang.loading + ' ...');
             var data = {
                 action: "woocs_save_etalon",
                 currency_name: currency_name,
-		currency_nonce
+                currency_nonce: jQuery('input[name="woocs_currency_nonce"]').val()
             };
             jQuery.post(ajaxurl, data, function (request) {
                 try {
@@ -395,7 +396,8 @@ jQuery(function ($) {
         jQuery(_this).parent().find('input[name="woocs_rate[]"]').val(woocs_lang.loading.toLowerCase() + ' ...');
         var data = {
             action: "woocs_get_rate",
-            currency_name: currency_name
+            currency_name: currency_name,
+            currency_nonce: jQuery('input[name="woocs_currency_nonce"]').val()
         };
         jQuery.post(ajaxurl, data, function (value) {
             jQuery(_this).parent().find('input[name="woocs_rate[]"]').val(value);
@@ -480,7 +482,8 @@ function woocs_update_profiles_data(key, title, countries) {
         countries: countries,
         key: key,
         title: title,
-        woocs_wpnonce_geo: woocs_wpnonce
+        woocs_wpnonce_geo: woocs_wpnonce,
+        currency_nonce: jQuery('input[name="woocs_currency_nonce"]').val()
     };
     jQuery.post(ajaxurl, data, function (value) {
         value = JSON.parse(value);
@@ -552,11 +555,12 @@ function woocs_edit_geoip_profile() {
 function woocs_delete_geoip_profile() {
     var selected = jQuery('select.woocs_geoip_profile_countries option:selected');
     var key = selected.data('key');
-    var woocs_wpnonce =jQuery('input[name="woocs_wpnonce_geo"]').val(); 
+    var woocs_wpnonce = jQuery('input[name="woocs_wpnonce_geo"]').val();
     var data = {
         action: "woocs_delete_profiles_data",
-	woocs_wpnonce_geo: woocs_wpnonce,
-        key: key
+        woocs_wpnonce_geo: woocs_wpnonce,
+        key: key,
+        currency_nonce: jQuery('input[name="woocs_currency_nonce"]').val()
     };
     if (confirm("Sure?")) {
         jQuery.post(ajaxurl, data, function (value) {

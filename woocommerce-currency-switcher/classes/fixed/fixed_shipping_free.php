@@ -1,43 +1,45 @@
 <?php
 
-if (!defined('ABSPATH'))
-    die('No direct access allowed');
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'No direct access allowed' );
+}
 
 class WOOCS_FIXED_SHIPPING_FREE extends WOOCS_FIXED_AMOUNT {
 
-    protected $key = "";
+	protected $key = '';
 
-    public function __construct() {
-        $this->key = "_min_shipping_";
-        add_filter('woocommerce_shipping_instance_form_fields_free_shipping', array($this, 'add_fixed_free_rate'), 9999, 1);
-        add_filter('woocommerce_shipping_free_shipping_instance_settings_values', array($this, 'save_fixed_free_rate'), 9999, 2);
-    }
+	public function __construct() {
+		$this->key = '_min_shipping_';
+		add_filter( 'woocommerce_shipping_instance_form_fields_free_shipping', array( $this, 'add_fixed_free_rate' ), 9999, 1 );
+		add_filter( 'woocommerce_shipping_free_shipping_instance_settings_values', array( $this, 'save_fixed_free_rate' ), 9999, 2 );
+	}
 
-    public function add_fixed_free_rate($fields) {
-        global $WOOCS;
-        $currencies = $WOOCS->get_currencies();
-        $default_currency = $WOOCS->default_currency;
-        //$is_fixed_enabled = $WOOCS->is_fixed_shipping;
+	public function add_fixed_free_rate( $fields ) {
+		global $WOOCS;
+		$currencies       = $WOOCS->get_currencies();
+		$default_currency = $WOOCS->default_currency;
+		// $is_fixed_enabled = $WOOCS->is_fixed_shipping;
 
-        foreach ($currencies as $code => $data) {
-            if ($code == $default_currency) {
-                continue;
-            }
-            $fields['woocs_fixed' . $this->key . $code] = array(
-                'title' => sprintf(esc_html__('Minimum order amount in %s', 'woocommerce-currency-switcher'), $code),
-                'type' => 'price',
-                'placeholder' => esc_html__("auto", 'woocommerce-currency-switcher'),
-                'description' => $code,
-                'default' => '',
-                'desc_tip' => true
-            );
-        }
+		foreach ( $currencies as $code => $data ) {
+			if ( $code == $default_currency ) {
+				continue;
+			}
+			$fields[ 'woocs_fixed' . $this->key . $code ] = array(
+				// translators: %s is a currency or value.
+				'title'       => sprintf( esc_html__( 'Minimum order amount in %s', 'woocommerce-currency-switcher' ), $code ),
+				'type'        => 'price',
+				'placeholder' => esc_html__( 'auto', 'woocommerce-currency-switcher' ),
+				'description' => $code,
+				'default'     => '',
+				'desc_tip'    => true,
+			);
+		}
 
-        $handle = 'woocs-free-shipping-fields';
-        wp_register_script($handle, '', array('jquery'), false, true);
-        wp_enqueue_script($handle);
+		$handle = 'woocs-free-shipping-fields';
+		wp_register_script( $handle, '', array( 'jquery' ), WOOCS_VERSION, true );
+		wp_enqueue_script( $handle );
 
-        $inline_script = "
+		$inline_script = "
         jQuery(function($) {
             function wcFreeShippingShowHideMinAmountFieldWOOCS(el) {
                 var form = $(el).closest('form');
@@ -64,25 +66,25 @@ class WOOCS_FIXED_SHIPPING_FREE extends WOOCS_FIXED_AMOUNT {
         });
     ";
 
-        wp_add_inline_script($handle, $inline_script);
+		wp_add_inline_script( $handle, $inline_script );
 
-        return $fields;
-    }
+		return $fields;
+	}
 
-    public function save_fixed_free_rate($options, $method) {
-        return $options;
-    }
+	public function save_fixed_free_rate( $options, $method ) {
+		return $options;
+	}
 
-    public function get_value($method_key, $code, $type) {
+	public function get_value( $method_key, $code, $type ) {
 
-        $settings = get_option($method_key, null);
-        if ($settings == null OR !is_array($settings)) {
-            return -1;
-        }
-        $array_key = sprintf('woocs_fixed%s%s%s', $type, $this->key, $code);
-        if (!isset($settings[$array_key])) {
-            return -1;
-        }
-        return $this->prepare_float_val($settings[$array_key]);
-    }
+		$settings = get_option( $method_key, null );
+		if ( $settings == null or ! is_array( $settings ) ) {
+			return -1;
+		}
+		$array_key = sprintf( 'woocs_fixed%s%s%s', $type, $this->key, $code );
+		if ( ! isset( $settings[ $array_key ] ) ) {
+			return -1;
+		}
+		return $this->prepare_float_val( $settings[ $array_key ] );
+	}
 }

@@ -3,9 +3,9 @@ Contributors: RealMag777
 Donate link: https://pluginus.net/affiliate/woocommerce-currency-switcher
 Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.5
+Stable tag: 1.4.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,6 +194,15 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.7 =
+* Improvement: Codebase aligned with WordPress Coding Standards (WPCS) and PluginCheck recommendations.
+* 1 security issue fixed thanks to Long Lagon and Wordfence
+
+= 1.4.6 =
+* some small fixes
+* 2 security issues fixed thanks to Que Thanh Tuan, timomangcut and bounty program of Patchstack
+* 1 security issue fixed thanks to Ren Voza and bounty program of Wordfence
 
 = 1.4.5 =
 * added hook woocs_sheduler_rates_updated
