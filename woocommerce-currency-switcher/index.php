@@ -5,8 +5,8 @@
 	Plugin URI: https://currency-switcher.com/
 	Description: Currency Switcher for WooCommerce that allows to the visitors and customers on your woocommerce store site switch currencies and optionally apply selected currency on checkout
 	Author: realmag777
-	Version: 1.4.7
-	Requires at least: 6.0.0
+	Version: 1.4.8
+	Requires at least: 6.0
 	Tested up to: 7.0
 	Requires PHP: 7.4
 	Text Domain: woocommerce-currency-switcher
@@ -14,7 +14,7 @@
 	Forum URI: https://pluginus.net/support/forum/woocs-woocommerce-currency-switcher-multi-currency-and-multi-pay-for-woocommerce/
 	Author URI: https://pluginus.net/
 	WC requires at least: 6.0
-	WC tested up to: 10.7
+	WC tested up to: 10.8
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,14 @@ if ( isset( $_SERVER['SCRIPT_URI'] ) ) {
 
 
 if ( defined( 'DOING_AJAX' ) ) {
+	
+	add_action( 'wp_ajax_woocommerce_refund_line_items', function() {
+		//https://pluginus.net/support/topic/unable-to-refund-order-invalid-refund-amount/
+		if ( isset( $_POST['refund_amount'] ) ) {
+			$_POST['refund_amount'] = str_replace( ',', '.', wp_unslash( $_POST['refund_amount'] ) );
+		}
+	}, 1 );
+
 
 	if ( isset( $_REQUEST['action'] ) ) {
 		// do not recalculate refund amounts when we are in order backend
@@ -80,7 +88,7 @@ if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 	}
 }
 
-define( 'WOOCS_VERSION', '1.4.7' );
+define( 'WOOCS_VERSION', '1.4.8' );
 // define('WOOCS_VERSION', uniqid('woocs-'));//for dev test purposes to reset browser cache
 define( 'WOOCS_MIN_WOOCOMMERCE', '6.0' );
 define( 'WOOCS_PATH', plugin_dir_path( __FILE__ ) );
@@ -104,7 +112,7 @@ require_once WOOCS_PATH . 'classes/woocs_hpos.php';
 
 require_once WOOCS_PATH . 'classes/world_currencies.php';
 
-// 22-05-2026
+// 26-05-2026
 class WOOCS_STARTER {
 
 	private $default_woo_version   = 6.0;
