@@ -945,7 +945,11 @@ final class WOOCS {
 				$this->cron->attach( $this->cron_hook, time(), $this->wp_cron_period );
 			}
 
-			$this->cron->process();
+			try {
+				$this->cron->process();
+			} catch ( \Throwable $e ) {
+				error_log( '[WOOCS] Rate auto-update failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() );
+			}
 		}
 	}
 
@@ -1032,7 +1036,12 @@ final class WOOCS {
 				continue;
 			}
 			$_REQUEST['currency_name'] = $currency['name'];
-			$request[ $key ]           = (float) $this->get_rate();
+			try {
+				$request[ $key ] = (float) $this->get_rate();
+			} catch ( \Throwable $e ) {
+				error_log( '[WOOCS] Failed to get rate for ' . $key . ': ' . $e->getMessage() );
+				$request[ $key ] = -1.0;
+			}
 		}
 		// *** checking and assigning data
 		foreach ( $currencies as $key => $currency ) {
@@ -4076,7 +4085,12 @@ final class WOOCS {
 
 			$this->init_geo_currency();
 			$_REQUEST['get_product_price_by_ajax'] = 1;
-			$products_ids                          = array_map( 'intval', $_REQUEST['products_ids'] );
+			
+			$raw_ids = $_REQUEST['products_ids'];
+			$products_ids = array();
+			foreach ( $raw_ids as $k => $v ) {
+				$products_ids[ sanitize_key( $k ) ] = intval( $v );
+			}
 
 			if ( ! empty( $products_ids ) and is_array( $products_ids ) ) {
 				foreach ( $products_ids as $k_id => $p_id ) {
@@ -4103,7 +4117,7 @@ final class WOOCS {
 		$data['current_currency'] = $this->current_currency;
 		$data['currency_data']    = $currencies[ $this->current_currency ];
 
-		wp_die( json_encode( $data ) );
+		wp_send_json( $data );
 	}
 
 	public function woocs_get_variation_products_price_html() {
@@ -4116,7 +4130,12 @@ final class WOOCS {
 
 			$this->init_geo_currency();
 			$_REQUEST['get_product_price_by_ajax'] = 1;
-			$products_ids                          = $_REQUEST['var_products_ids'];
+
+			$raw_ids = $_REQUEST['var_products_ids'];
+			$products_ids = array();
+			foreach ( $raw_ids as $k => $v ) {
+				$products_ids[ sanitize_key( $k ) ] = intval( $v );
+			}
 
 			if ( ! empty( $products_ids ) and is_array( $products_ids ) ) {
 				foreach ( $products_ids as $p_id ) {
@@ -4128,7 +4147,7 @@ final class WOOCS {
 			}
 		}
 
-		wp_die( json_encode( $result ) );
+		wp_send_json( $result );
 	}
 
 	function woocs_get_custom_price_html() {

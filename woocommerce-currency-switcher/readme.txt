@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.8
+Stable tag: 1.4.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,6 +194,9 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.4.9 - 12 June, 2026 =
+* 1 security issue fixed thanks to Nguyen Ba Khanh and Patchstack
 
 = 1.4.8 =
 * [https://pluginus.net/support/topic/unable-to-refund-order-invalid-refund-amount](fix about orders refund)
