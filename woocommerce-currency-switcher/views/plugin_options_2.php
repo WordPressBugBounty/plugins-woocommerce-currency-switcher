@@ -49,7 +49,7 @@ global $WOOCS;
 
 				<?php else : ?>
 
-					<a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" style="position: absolute;
+					<a href="https://currency-switcher.com/downloads" style="position: absolute;
 						right: 0;
 						top: 19px;
 						background-color: #2f55d4;
@@ -1954,10 +1954,10 @@ global $WOOCS;
 																</div>
 
 																<?php
-																$rate_url = 'https://codecanyon.net/downloads#item-8085217';
-																if ( $WOOCS->notes_for_free ) {
+																//$rate_url = 'https://codecanyon.net/downloads#item-8085217';
+																//if ( $WOOCS->notes_for_free ) {
 																	$rate_url = 'https://wordpress.org/support/plugin/woocommerce-currency-switcher/reviews/#new-post';
-																}
+																//}
 																?>
 
 																<div class="woocs__alert woocs__alert-info" role="alert">
@@ -1980,8 +1980,8 @@ global $WOOCS;
 																</div>
 
 																<ul class="woocs__features-gallery woocs__col-6">
-																	<li><a target="_blank" href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woof_banner.png" /></a></li>
-																	<li><a target="_blank" href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woobe_banner.png" /></a></li>
+																	<li><a target="_blank" href="https://products-filter.com/downloads"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woof_banner.png" /></a></li>
+																	<li><a target="_blank" href="https://bulk-editor.com/downloads"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woobe_banner.png" /></a></li>
 																	<li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woot_banner.png" /></a></li>
 
 																	<li><a href="https://wordpress.org/plugins/botoscope/" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram" target="_blank">
@@ -2139,7 +2139,7 @@ global $WOOCS;
 																<?php esc_html_e( 'you can operate with 2 ANY currencies only!', 'woocommerce-currency-switcher' ); ?>
 															</b> 
 															<?php esc_html_e( ' If you want to use more currencies', 'woocommerce-currency-switcher' ); ?>
-															<a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" target="_blank">
+															<a href="https://currency-switcher.com/downloads" target="_blank">
 																<?php esc_html_e( ' you can make upgrade to the premium version', 'woocommerce-currency-switcher' ); ?>
 															</a>
 															<?php esc_html_e( ' of the plugin', 'woocommerce-currency-switcher' ); ?>
@@ -2150,17 +2150,17 @@ global $WOOCS;
 																<tr>
 																	<td>
 																		<h6 class="woocs_red"><?php esc_html_e( 'UPGRADE to Full version', 'woocommerce-currency-switcher' ); ?>:</h6>
-																		<a href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woocs_banner.png" alt="<?php esc_html_e( 'full version of the plugin', 'woocommerce-currency-switcher' ); ?>" /></a>
+																		<a href="https://currency-switcher.com/downloads" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woocs_banner.png" alt="<?php esc_html_e( 'full version of the plugin', 'woocommerce-currency-switcher' ); ?>" /></a>
 																	</td>
 
 																	<td>
 																		<h6><?php esc_html_e( 'HUSKY - Products Filter', 'woocommerce-currency-switcher' ); ?>:</h6>
-																		<a href="https://codecanyon.pluginus.net/item/woof-woocommerce-products-filter" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woof_banner.png" alt="<?php esc_html_e( 'WOOF - WooCommerce Products Filter', 'woocommerce-currency-switcher' ); ?>" /></a>
+																		<a href="https://products-filter.com/downloads" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woof_banner.png" alt="<?php esc_html_e( 'WOOF - WooCommerce Products Filter', 'woocommerce-currency-switcher' ); ?>" /></a>
 																	</td>
 
 																	<td>
 																		<h6><?php esc_html_e( 'BEAR - Bulk Editor', 'woocommerce-currency-switcher' ); ?>:</h6>
-																		<a href="https://codecanyon.pluginus.net/item/woobe-woocommerce-bulk-editor-professional/21779835" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woobe_banner.png" alt="<?php esc_html_e( 'WOOBE - WooCommerce Bulk Editor Professional', 'woocommerce-currency-switcher' ); ?>" /></a>
+																		<a href="https://bulk-editor.com/downloads" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woobe_banner.png" alt="<?php esc_html_e( 'WOOBE - WooCommerce Bulk Editor Professional', 'woocommerce-currency-switcher' ); ?>" /></a>
 																	</td>
 
 																	<td>

@@ -1,6 +1,6 @@
 === FOX - Currency Switcher Professional for WooCommerce ===
 Contributors: RealMag777
-Donate link: https://pluginus.net/affiliate/woocommerce-currency-switcher
+Donate link: https://currency-switcher.com/downloads
 Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.0
@@ -144,7 +144,7 @@ Also the plugin has ajaxed shortcode/widget of [currency converter](https://demo
 * Unlimited count of currencies (in the free version 2 currencies available)
 
 
-**Get Premium version of the plugin**: [on Codecanyon](https://pluginus.net/affiliate/woocommerce-currency-switcher)
+**Get Premium version of the plugin**: [on the plugin site](https://currency-switcher.com/downloads)
 
 
 ### Make your site more profitable with next powerful scripts:
@@ -530,5 +530,5 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 == Upgrade Notice ==
-[Look here for ADVANCED version of the plugin](https://pluginus.net/affiliate/woocommerce-currency-switcher)
+[Look here for ADVANCED version of the plugin](https://currency-switcher.com/downloads)
 

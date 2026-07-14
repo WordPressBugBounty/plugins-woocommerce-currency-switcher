@@ -1153,7 +1153,7 @@ final class WOOCS {
 
 		if ( $this->notes_for_free ) {
 
-			$buttons[] = '<a target="_blank" class="woocs-go-pro" href="https://codecanyon.pluginus.net/item/woocommerce-currency-switcher/8085217">' . esc_html__( 'Go Pro!', 'woocommerce-currency-switcher' ) . '</a>';
+			$buttons[] = '<a target="_blank" class="woocs-go-pro" href="https://currency-switcher.com/downloads">' . esc_html__( 'Go Pro!', 'woocommerce-currency-switcher' ) . '</a>';
 		}
 
 		return array_merge( $buttons, $links );
@@ -5946,12 +5946,12 @@ final class WOOCS {
 					return;
 				}
 
-				$link = 'https://codecanyon.net/downloads#item-8085217';
-				$on   = 'CodeCanyon';
-				if ( $this->notes_for_free ) {
+				//$link = 'https://codecanyon.net/downloads#item-8085217';
+				//$on   = 'CodeCanyon';
+				//if ( $this->notes_for_free ) {
 					$link = 'https://wordpress.org/plugins/woocommerce-currency-switcher/reviews';
 					$on   = 'WordPress';
-				}
+				//}
 				?>
 			<div class="notice notice-info woocs-pos-relative" id="pn_<?php echo esc_attr( $slug ); ?>_ask_favour">
 				<button onclick="javascript: pn_<?php echo esc_attr( $slug ); ?>_dismiss_review(1); void(0);" title="<?php esc_html_e( 'Later', 'woocommerce-currency-switcher' ); ?>" class="notice-dismiss"></button>

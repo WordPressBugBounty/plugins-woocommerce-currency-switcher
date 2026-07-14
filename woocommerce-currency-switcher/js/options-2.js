@@ -237,9 +237,8 @@ jQuery(function ($) {
 
     jQuery('#woocs_add_currency, #woocs_add_currency2').on('click', function () {
         if (jQuery('.woocs_settings_promotion').length > 0) {
-            if (confirm('Hi! In the free version of FOX you can operate with 2 ANY currencies! If you want to use more currencies you can make upgrade to the premium version of the plugin. Would you like to visit the plugin page on Codecanyon?')) {
-                //window.open('https://currency-switcher.com/a/buy', '_blank');
-                window.location.href = 'https://currency-switcher.com/a/buy';
+            if (confirm('Hi! In the free version of FOX you can operate with 2 ANY currencies! If you want to use more currencies you can make upgrade to the premium version of the plugin. Would you like to visit the plugin site?')) {
+                window.location.href = 'https://currency-switcher.com/downloads';
             }
         } else {
             let action = this.getAttribute('data-action');
