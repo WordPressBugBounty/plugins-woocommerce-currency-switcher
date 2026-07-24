@@ -41,7 +41,35 @@ final class WOOCS_STORAGE {
 			$ip = '';
 		}
 		$this->user_ip       = filter_var( $ip, FILTER_VALIDATE_IP );
+		
+		//+++
+		
+		// Cloudflare sets CF-Connecting-IP itself and overwrites any client supplied value,
+		// so behind Cloudflare it is more reliable than X-Real-IP / X-Forwarded-For.
+		if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
+			$cf_ip = filter_var( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ), FILTER_VALIDATE_IP );
+			if ( $cf_ip ) {
+				$this->user_ip = $cf_ip;
+			}
+		}
+
 		$this->transient_key = substr( md5( $this->user_ip ), 7, 23 );
+
+		// Browser key mode: the browser supplies its own unique key from localStorage,
+		// so visitors behind a shared IP (office NAT, mobile carriers) do not share
+		// the same storage bucket. Enabled ONLY for Transient storage + cached shop.
+		if ( $this->type === 'transient' && get_option( 'woocs_shop_is_cached', 0 ) ) {
+			if ( ! empty( $_REQUEST['woocs_sk'] ) ) {
+				$sk = substr( sanitize_key( wp_unslash( $_REQUEST['woocs_sk'] ) ), 0, 32 );
+				if ( strlen( $sk ) >= 8 ) {
+					$this->transient_key = substr( md5( 'woocs_sk_' . $sk ), 7, 23 );
+				}
+			}
+		}
+		
+		
+		//+++
+		
 		if ( $this->type == 'woocs_session' ) {
 			$this->woocs_session = new WOOCS_SESSION();
 			$this->woocs_session->init();
@@ -99,7 +127,13 @@ final class WOOCS_STORAGE {
 					$data = array();
 				}
 				$data[ $key ] = $value;
-				set_transient( $this->transient_key, $data, 1 * 24 * 3600 ); // 1 day
+				
+				// 1 day by default. Longer only in browser key mode, where the key is stable per browser.
+				$woocs_ttl = ( $this->type === 'transient' && get_option( 'woocs_shop_is_cached', 0 ) )
+					? 30 * 24 * 3600
+					: 1 * 24 * 3600;
+				set_transient( $this->transient_key, $data, $woocs_ttl );
+
 				break;
 			case 'cookie':
 				setcookie( $key, $value, time() + 1 * 24 * 3600 ); // 1 day

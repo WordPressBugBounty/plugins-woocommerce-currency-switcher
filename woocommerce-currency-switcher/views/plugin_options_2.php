@@ -1620,12 +1620,13 @@ global $WOOCS;
 												<input type="hidden" name="woocs_geo_rules_profile_key" value="">
 													<input type="hidden" name="woocs_wpnonce_geo" value="<?php echo esc_html( wp_create_nonce( 'woocs_wpnonce_geo' ) ); ?>" >
 														<input type="text" name="woocs_geo_rules_profile_title" value="" class="woocs-w-100p" placeholder="<?php esc_html_e( 'Set title', 'woocommerce-currency-switcher' ); ?>" />
+														<br>
 														<select name="woocs_geo_rules_profile_countries[]" multiple="" size="1" style="width: 100%" id="woocs_geo_rules_profile_countries" class="chosen_select">
 															<?php foreach ( $countries as $key => $value ) : ?>
 																<option  value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $value ); ?></option>
 															<?php endforeach; ?>
-														</select>
-
+														</select><br>
+															<br>
 														<a href="javascript:woocs_add_geoip_profile()" class="woocs__button woocs_add_geoip_profile"><?php esc_html_e( 'Add new profile', 'woocommerce-currency-switcher' ); ?></a>
 														<a href="javascript:woocs_update_geoip_profile()" class="woocs__button woocs_update_geoip_profile"><?php esc_html_e( 'Update profile', 'woocommerce-currency-switcher' ); ?></a>
 														<a href="javascript:woocs_cancel_geoip_profile()" class="woocs__button woocs_update_cancel_geoip_profile"><?php esc_html_e( 'Cancel', 'woocommerce-currency-switcher' ); ?></a>

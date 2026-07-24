@@ -74,7 +74,9 @@ class WOOCS_reports {
 					$tmp   = array();
 					$order = new WC_Order( $order_id );
 
-					$_order_currency = get_post_meta( $order_id, '_order_currency', true );
+					$_order          = wc_get_order( $order_id );
+					$_order_currency = $_order ? $_order->get_currency() : get_post_meta( $order_id, '_order_currency', true );
+					
 					$order_rate      = get_post_meta( $order_id, '_woocs_order_rate', true );
 					if ( ! $order_rate ) {
 						if ( isset( $currencies[ $_order_currency ] ) ) {

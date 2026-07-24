@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.9
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,6 +194,12 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.0 - 24 July, 2026 =
+* Fixed logic of working: cache site + transient, added localstorage for selection personalization
+* Fixed class cron: is_attached() returns false not only when the hook is missing, but also when the stored recurrence differs from the currently configured one. So as soon as those two values disagreed for any reason, every single page request re-attached the event and pushed next a full interval into the future.
+* Fixed: order totals could be inflated when saving/editing an order in a currency that uses a comma as the decimal separator (wp-admin order editor)
+* Fixed: base currency symbol shown instead of the order currency after saving order items on HPOS
 
 = 1.4.9 - 12 June, 2026 =
 * 1 security issue fixed thanks to Nguyen Ba Khanh and Patchstack

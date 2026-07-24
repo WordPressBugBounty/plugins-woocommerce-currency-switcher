@@ -2,6 +2,24 @@
 var woocs_loading_first_time = true;//simply flag var
 var woocs_sumbit_currency_changing = true;//just a flag variable for drop-down redraws when prices redraws by AJAX
 
+
+// Unique per-browser storage key. Generated once and kept in localStorage forever.
+// Used ONLY in browser key mode as the storage key instead of the visitor IP.
+var woocs_sk = '';
+if (typeof woocs_browser_key_mode !== 'undefined' && woocs_browser_key_mode) {
+    try {
+        woocs_sk = localStorage.getItem('woocs_sk') || '';
+        if (!woocs_sk) {
+            woocs_sk = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID().replace(/-/g, '')
+                : String(Date.now()) + Math.random().toString(36).slice(2, 12);
+            localStorage.setItem('woocs_sk', woocs_sk);
+        }
+    } catch (e) {
+        woocs_sk = ''; // private mode / storage disabled: silently fall back to the IP based key
+    }
+}
+
 jQuery(function ($) {
 
     if (typeof woocs_array_of_get === 'undefined') {
@@ -9,6 +27,16 @@ jQuery(function ($) {
     }
 
     woocs_array_of_get = JSON.parse(woocs_array_of_get);
+    
+    // Attach the browser key to every AJAX request (admin-ajax and wc-ajax),
+    // so the cart and the checkout resolve the same currency as the catalog pages.
+    if (woocs_sk) {
+        $(document).ajaxSend(function (e, xhr, settings) {
+            if (typeof settings.data === 'string' && settings.data.indexOf('woocs_sk=') === -1) {
+                settings.data += (settings.data ? '&' : '') + 'woocs_sk=' + encodeURIComponent(woocs_sk);
+            }
+        });
+    }
 
     //wp-content\plugins\woocommerce\assets\js\frontend\cart.js
     if (Object.keys(woocs_array_of_get).length !== 0) {
@@ -194,7 +222,11 @@ jQuery(function ($) {
                             current_currency: woocs_current_currency['name']
                         };
                         jQuery.post(woocs_ajaxurl, data, function (data) {
-                            data = JSON.parse(data);
+                            // The server answers with wp_send_json (already parsed by jQuery)
+                            // in one branch and with wp_die(json_encode()) (plain string) in another.
+                            if (typeof data === 'string') {
+                                data = JSON.parse(data);
+                            }
                             if (!jQuery.isEmptyObject(data)) {
                                 jQuery.each(data, function (val, price) {
                                     jQuery(".woocs_amount_custom_price[data-value='" + val + "']").replaceWith(price);
@@ -221,7 +253,11 @@ jQuery(function ($) {
                             };
 
                             jQuery.post(woocs_ajaxurl, data_var, function (data) {
-                                data = JSON.parse(data);
+                                // The server answers with wp_send_json (already parsed by jQuery)
+                                // in one branch and with wp_die(json_encode()) (plain string) in another.
+                                if (typeof data === 'string') {
+                                    data = JSON.parse(data);
+                                }
 
                                 if (!jQuery.isEmptyObject(data)) {
                                     jQuery.each(var_data, function (indx, attr) {
@@ -261,7 +297,12 @@ jQuery(function ($) {
 
                     jQuery.post(woocs_ajaxurl, data, function (data) {
 
-                        data = JSON.parse(data);
+                        // The server answers with wp_send_json (already parsed by jQuery)
+                        // in one branch and with wp_die(json_encode()) (plain string) in another.
+                        if (typeof data === 'string') {
+                            data = JSON.parse(data);
+                        }
+                            
                         if (jQuery.isEmptyObject(data)) {
                             woocs_sumbit_currency_changing = true;
                         }
@@ -479,7 +520,7 @@ function woocs_redirect(currency) {
      l = l.replace(/(&currency=[a-zA-Z]+)/g, '');
      */
 
-    if (woocs_special_ajax_mode) {
+    if (woocs_special_ajax_mode || woocs_sk) {
         string_of_get = "";
 
         var data = {

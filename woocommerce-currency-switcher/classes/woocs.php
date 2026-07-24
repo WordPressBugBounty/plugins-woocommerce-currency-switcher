@@ -811,8 +811,9 @@ final class WOOCS {
 			// ***
 			if ( $actions and current_user_can( 'edit_shop_orders' ) ) {
 				$this->current_currency = $this->default_currency;
-				// check if is order has installed currency
-				$currency = get_post_meta( $_REQUEST['order_id'], '_order_currency', true );
+				// check if is order has installed currency (HPOS-safe, legacy fallback)
+				$order    = wc_get_order( $_REQUEST['order_id'] );
+				$currency = $order ? $order->get_currency() : get_post_meta( $_REQUEST['order_id'], '_order_currency', true );
 				if ( ! empty( $currency ) ) {
 					$this->current_currency = $currency;
 				}
@@ -824,7 +825,8 @@ final class WOOCS {
 			and isset( $_REQUEST['status'] ) and $_REQUEST['status'] == 'completed'
 			and isset( $_REQUEST['order_id'] )
 		) {
-			$currency = get_post_meta( $_REQUEST['order_id'], '_order_currency', true );
+			$order    = wc_get_order( $_REQUEST['order_id'] );
+			$currency = $order ? $order->get_currency() : get_post_meta( $_REQUEST['order_id'], '_order_currency', true );
 			if ( ! empty( $currency ) ) {
 				$_REQUEST['woocs_in_order_currency'] = $currency;
 				$this->current_currency              = $currency;
@@ -955,6 +957,8 @@ final class WOOCS {
 
 	public function get_woocs_cron_schedules( $key = '' ) {
 		$schedules = array(
+			'min1'       => MINUTE_IN_SECONDS,
+			'min5'      => 5 * MINUTE_IN_SECONDS,
 			'min15'      => 15 * MINUTE_IN_SECONDS,
 			'min30'      => 30 * MINUTE_IN_SECONDS,
 			'min45'      => 45 * MINUTE_IN_SECONDS,
@@ -963,8 +967,7 @@ final class WOOCS {
 			'twicedaily' => HOUR_IN_SECONDS * 12,
 			'daily'      => DAY_IN_SECONDS,
 			'week'       => WEEK_IN_SECONDS,
-			'month'      => WEEK_IN_SECONDS * 4,
-			'min1'       => MINUTE_IN_SECONDS,
+			'month'      => WEEK_IN_SECONDS * 4			
 		);
 
 		if ( ! empty( $key ) and isset( $schedules[ $key ] ) ) {
@@ -1266,7 +1269,8 @@ final class WOOCS {
 	public function the_post( $post ) {
 		if ( is_object( $post ) and ( $post->post_type == 'shop_order' or $post->post_type == 'shop_subscription' ) ) {
 
-			$currency = get_post_meta( $post->ID, '_order_currency', true );
+			$order    = wc_get_order( $post->ID );
+			$currency = $order ? $order->get_currency() : get_post_meta( $post->ID, '_order_currency', true );
 			if ( ! empty( $currency ) ) {
 				$_REQUEST['woocs_in_order_currency'] = $currency;
 				$this->current_currency              = $currency;
@@ -1282,7 +1286,8 @@ final class WOOCS {
 			$post_id = $_GET['post'];
 			$post    = get_post( $post_id );
 			if ( is_object( $post ) and ( $post->post_type == 'shop_order' or $post->post_type == 'shop_subscription' ) ) {
-				$currency = get_post_meta( $post->ID, '_order_currency', true );
+				$order    = wc_get_order( $post->ID );
+				$currency = $order ? $order->get_currency() : get_post_meta( $post->ID, '_order_currency', true );
 				if ( ! empty( $currency ) ) {
 					$_REQUEST['woocs_in_order_currency'] = $currency;
 					$this->current_currency              = $currency;
@@ -1471,6 +1476,9 @@ final class WOOCS {
 		var woocs_ajaxurl = "<?php echo esc_attr( admin_url( 'admin-ajax.php' ) ); ?>";
 		var woocs_lang_loading = "<?php esc_html_e( 'loading', 'woocommerce-currency-switcher' ); ?>";
 		var woocs_shop_is_cached =<?php echo (int) $this->shop_is_cached; ?>;
+		// Browser key mode: works ONLY with Transient storage + cached shop.
+		// In any other combination the behavior must stay exactly as before.
+		var woocs_browser_key_mode = <?php echo (int) ( get_option( 'woocs_storage', 'transient' ) === 'transient' && get_option( 'woocs_shop_is_cached', 0 ) ); ?>;
 		<?php
 		return ob_get_clean();
 	}
@@ -3048,7 +3056,8 @@ final class WOOCS {
 			global $post;
 			if ( is_object( $post ) and $post->post_type == 'shop_order' ) {
 				// processing button pressed in: wp-admin/edit.php?post_type=shop_order
-				$currency = get_post_meta( $post->ID, '_order_currency', true );
+				$order    = wc_get_order( $post->ID );
+				$currency = $order ? $order->get_currency() : get_post_meta( $post->ID, '_order_currency', true );
 				if ( ! empty( $currency ) ) {
 					$_REQUEST['woocs_in_order_currency'] = $currency;
 					$this->current_currency              = $currency;
@@ -3634,7 +3643,7 @@ final class WOOCS {
 			} else {
 				$order_id = $order->id;
 			}
-			$currency = get_post_meta( $order_id, '_order_currency', true );
+			$currency = $order ? $order->get_currency() : get_post_meta( $order_id, '_order_currency', true );
 			if ( ! empty( $currency ) ) {
 				$this->current_currency = $currency;
 			}
@@ -4208,7 +4217,8 @@ final class WOOCS {
 			$selected_currency = $this->default_currency;
 		}
 
-		$order_currency    = get_post_meta( $order_id, '_order_currency', true );
+		$order             = wc_get_order( $order_id );
+		$order_currency    = $order ? $order->get_currency() : get_post_meta( $order_id, '_order_currency', true );
 		$_woocs_order_rate = get_post_meta( $order_id, '_woocs_order_rate', true );
 
 		// lets avoid recalculation for order which is already in

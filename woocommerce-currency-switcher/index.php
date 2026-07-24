@@ -1,11 +1,10 @@
 <?php
-
 /*
 	Plugin Name: FOX - Currency Switcher Professional for WooCommerce
 	Plugin URI: https://currency-switcher.com/
 	Description: Currency Switcher for WooCommerce that allows to the visitors and customers on your woocommerce store site switch currencies and optionally apply selected currency on checkout
 	Author: realmag777
-	Version: 1.4.9
+	Version: 1.5.0
 	Requires at least: 6.0
 	Tested up to: 7.0
 	Requires PHP: 7.4
@@ -14,7 +13,7 @@
 	Forum URI: https://pluginus.net/support/forum/woocs-woocommerce-currency-switcher-multi-currency-and-multi-pay-for-woocommerce/
 	Author URI: https://pluginus.net/
 	WC requires at least: 6.0
-	WC tested up to: 10.8
+	WC tested up to: 10.9
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +26,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( isset( $_GET['woocommerce_gpf'] ) ) {
 	return false;
+}
+
+// Optional Freemius integration: load only if the bootstrap file is present.
+// For marketplace builds (woo.com, Envato) just delete /freemius and freemius.php — this is skipped.
+$freemius_bootstrap = dirname( __FILE__ ) . '/freemius.php';
+if ( file_exists( $freemius_bootstrap ) ) {
+    require_once $freemius_bootstrap;
 }
 
 // disable FOX influence for REST api requests
@@ -48,14 +54,13 @@ if ( isset( $_SERVER['SCRIPT_URI'] ) ) {
 
 
 if ( defined( 'DOING_AJAX' ) ) {
-	
+
 	add_action( 'wp_ajax_woocommerce_refund_line_items', function() {
 		//https://pluginus.net/support/topic/unable-to-refund-order-invalid-refund-amount/
 		if ( isset( $_POST['refund_amount'] ) ) {
 			$_POST['refund_amount'] = str_replace( ',', '.', wp_unslash( $_POST['refund_amount'] ) );
 		}
 	}, 1 );
-
 
 	if ( isset( $_REQUEST['action'] ) ) {
 		// do not recalculate refund amounts when we are in order backend
@@ -72,7 +77,7 @@ if ( defined( 'DOING_AJAX' ) ) {
 		if ( isset( $_REQUEST['order_id'] ) and $_REQUEST['action'] == 'woocommerce_load_order_items' ) {
 			return;
 		}
-		
+
 		//fix for BEAR plugin
 		if ( strpos($_REQUEST['action'], 'woobe') !== false ) {
 			return;
@@ -88,7 +93,7 @@ if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 	}
 }
 
-define( 'WOOCS_VERSION', '1.4.9' );
+define( 'WOOCS_VERSION', '1.5.0' );
 // define('WOOCS_VERSION', uniqid('woocs-'));//for dev test purposes to reset browser cache
 define( 'WOOCS_MIN_WOOCOMMERCE', '6.0' );
 define( 'WOOCS_PATH', plugin_dir_path( __FILE__ ) );
@@ -112,7 +117,7 @@ require_once WOOCS_PATH . 'classes/woocs_hpos.php';
 
 require_once WOOCS_PATH . 'classes/world_currencies.php';
 
-// 12-06-2026
+// 21-07-2026
 class WOOCS_STARTER {
 
 	private $default_woo_version   = 6.0;
@@ -346,6 +351,12 @@ add_action(
 add_filter(
 	'option_woocommerce_price_thousand_sep',
 	function ( $value ) {
+
+		// Keep the native store separator inside the wp-admin order editor.
+		if ( woocs_is_admin_order_edit_context() ) {
+			return $value;
+		}
+
 		global $WOOCS;
 
 		if ( is_object( $WOOCS ) ) {
@@ -361,6 +372,13 @@ add_filter(
 add_filter(
 	'option_woocommerce_price_decimal_sep',
 	function ( $value ) {
+
+		// Keep the native store separator inside the wp-admin order editor.
+		if ( woocs_is_admin_order_edit_context() ) {
+			return $value;
+		}
+
+
 		global $WOOCS;
 
 		if ( is_object( $WOOCS ) ) {
@@ -402,4 +420,43 @@ function woocs_validate_currency( $currency ) {
 		return $currency;
 	}
 	return strtoupper( $WOOCS->default_currency );
+}
+
+// Detect the wp-admin ORDER editor (edit screen + its AJAX endpoints).
+// Inside it WooCommerce's editable amount fields, their JS validation and
+// wc_format_decimal() all assume the single store separator, so FOX must NOT
+// override separators there (otherwise saved amounts get corrupted, e.g. x100).
+if ( ! function_exists( 'woocs_is_admin_order_edit_context' ) ) {
+	function woocs_is_admin_order_edit_context() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+
+		// AJAX actions dispatched from the order editor.
+		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() && isset( $_REQUEST['action'] ) ) {
+			$order_ajax = array(
+				'woocommerce_save_order_items',
+				'woocommerce_calc_line_taxes',
+				'woocommerce_add_order_item',
+				'woocommerce_remove_order_item',
+				'woocommerce_load_order_items',
+			);
+			return in_array( $_REQUEST['action'], $order_ajax, true );
+		}
+
+		// HPOS order screen: admin.php?page=wc-orders&action=edit|new
+		if ( isset( $_GET['page'] ) && 'wc-orders' === $_GET['page'] ) {
+			return true;
+		}
+
+		// Classic order screen: edit.php?post_type=shop_order or post.php?post=ID&action=edit
+		if ( isset( $_GET['post_type'] ) && 'shop_order' === $_GET['post_type'] ) {
+			return true;
+		}
+		if ( isset( $_GET['post'], $_GET['action'] ) && 'edit' === $_GET['action'] ) {
+			return 'shop_order' === get_post_type( intval( $_GET['post'] ) );
+		}
+
+		return false;
+	}
 }
