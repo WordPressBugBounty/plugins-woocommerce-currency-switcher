@@ -3635,6 +3635,10 @@ final class WOOCS {
 		if ( $this->woocs_hpos->isEnabledHpos() ) {
 			return $order_currency;
 		}
+		
+		//static $in_progress = false;
+		//if ( $in_progress ) { return $order_currency; }
+		//$in_progress = true;
 
 		if ( ! wp_doing_ajax() and ! is_admin() and is_object( $order ) ) {
 			$order_id = 0;
@@ -3643,12 +3647,16 @@ final class WOOCS {
 			} else {
 				$order_id = $order->id;
 			}
-			$currency = $order ? $order->get_currency() : get_post_meta( $order_id, '_order_currency', true );
+			
+			$currency = ! empty( $order_currency ) ? $order_currency : get_post_meta( $order_id, '_order_currency', true );
+
 			if ( ! empty( $currency ) ) {
 				$this->current_currency = $currency;
 			}
 		}
+		
 
+		//$in_progress = false;
 		return $order_currency;
 	}
 

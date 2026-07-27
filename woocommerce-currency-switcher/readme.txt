@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,6 +194,10 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.1 - 27 July, 2026 =
+* Fixed: fatal error (infinite loop / memory exhaustion) on the order-received
+  and view-order pages when HPOS is disabled
 
 = 1.5.0 - 24 July, 2026 =
 * Fixed logic of working: cache site + transient, added localstorage for selection personalization
