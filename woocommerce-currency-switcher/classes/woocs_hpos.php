@@ -98,7 +98,7 @@ class WoocsHpos {
 
 		// ***
 		// hpos
-		$line_items = $order->get_items( array( 'line_item', 'shipping', 'tax', 'coupon' ) );
+		$line_items = $order->get_items( array( 'line_item', 'shipping', 'tax', 'coupon', 'fee' ) );
 		if ( ! empty( $line_items ) and is_array( $line_items ) ) {
 			foreach ( $line_items as $v ) {
 				// hpos
@@ -165,6 +165,32 @@ class WoocsHpos {
 						// hpos
 						$v->set_taxes( $taxes );
 						break;
+						
+					case 'fee':
+						$total_amount = $v->get_total();
+						$v->set_total( $this->recalculateAmount( $total_amount, $_woocs_order_rate, $selected_currency ) );
+
+						$total_tax_amount = $v->get_total_tax();
+						$v->set_total_tax( $this->recalculateAmount( $total_tax_amount, $_woocs_order_rate, $selected_currency ) );
+
+						$taxes = $v->get_taxes();
+						if ( ! empty( $taxes ) and is_array( $taxes ) ) {
+							foreach ( $taxes as $key => $values ) {
+								if ( ! empty( $values ) ) {
+									if ( is_array( $values ) ) {
+										foreach ( $values as $k => $value ) {
+											if ( is_numeric( $value ) ) {
+												$taxes[ $key ][ $k ] = $this->recalculateAmount( $value, $_woocs_order_rate, $selected_currency );
+											}
+										}
+									} elseif ( is_numeric( $values ) ) {
+										$taxes[ $key ] = $this->recalculateAmount( $values, $_woocs_order_rate, $selected_currency );
+									}
+								}
+							}
+						}
+						$v->set_taxes( $taxes );
+						break;
 
 					case 'tax':
 						$tax_total_amount = $v->get_tax_total();
@@ -181,7 +207,8 @@ class WoocsHpos {
 
 						$coupon_discount_tax = $v->get_discount_tax();
 						$v->set_discount_tax( $this->recalculateAmount( $coupon_discount_tax, $_woocs_order_rate, $selected_currency ) );
-
+						break;
+				
 					default:
 						break;
 				}
@@ -213,6 +240,14 @@ class WoocsHpos {
 				$refund->save();
 			}
 		}
+		
+		
+		// allows a site to adjust recalculated amounts, e.g. flat fees
+		// that must keep a fixed value per currency
+		if ( function_exists( 'woocs_order_recalculated_custom' ) ) {
+			woocs_order_recalculated_custom( $order, $selected_currency, $order_currency, $_woocs_order_rate );
+		}
+
 		$order->save();
 	}
 

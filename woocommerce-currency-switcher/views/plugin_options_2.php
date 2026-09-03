@@ -71,7 +71,141 @@ global $WOOCS;
 
 
 		</div>
+		
+		
+		
+		<?php
+// Upsell notice for the free line only. Hidden in every premium build.
+if ( $WOOCS->notes_for_free ) :
+	?>
+	<div id="woocs-mig-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
+		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">Need more than two currencies?</div>
+		<p style="margin:0 0 10px 0;">
+			The free version of FOX is limited to two currencies. FOX Professional removes that limit and adds
+			nothing else you have to learn — same plugin, same settings, unlimited currencies, plus updates and
+			direct support from the developer.
+		</p>
+		<p style="margin:0 0 10px 0;padding:10px 12px;background:#fff;border:1px dashed #b9c4e6;border-radius:3px;">
+			<b>30% off with coupon</b>
+			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">FOXWP30</b>
+			<br>
+			<b style="text-decoration:underline;">The discount applies to every renewal, not just the first payment.</b>
+			Whatever the price becomes later, your rate stays where it is today for as long as your license
+			is active.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			The coupon is valid until <b>31 January 2027</b>, and prices go up in February. Subscriptions started
+			before then keep their original rate permanently.
+		</p>
+		<p style="margin:0;">
+			<a href="https://currency-switcher.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=FOXCC30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">See what PRO adds &rarr;</a>
+			<span style="margin-left:10px;color:#6b7280;">The free version stays free and keeps working.</span>
+		</p>
+		<a href="#" id="woocs-mig-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
+	</div>
+	<script>
+		( function () {
+			var key = 'woocs_upsell_notice_hidden_1'; // bump the suffix to run a new campaign
+			var box = document.getElementById( 'woocs-mig-notice' );
+			if ( ! box ) {
+				return;
+			}
+			var hidden = false;
+			try {
+				hidden = window.localStorage.getItem( key ) === '1';
+			} catch ( e ) {
+				hidden = document.cookie.indexOf( key + '=1' ) !== -1;
+			}
+			if ( ! hidden ) {
+				box.style.display = 'block'; // reveal only when not dismissed, avoids a flash
+			}
+			document.getElementById( 'woocs-mig-close' ).addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				if ( ! window.confirm( 'Hide this message permanently? It will not be shown again in this browser.' ) ) {
+					return;
+				}
+				try {
+					window.localStorage.setItem( key, '1' );
+				} catch ( e ) {}
+				document.cookie = key + '=1; path=/; max-age=34560000; SameSite=Lax';
+				box.style.display = 'none';
+			} );
+		} )();
+	</script>
+<?php endif; ?>
+		
 
+		
+		<?php
+// Migration notice: shown only in the standalone (marketplace) premium build.
+// Hidden for the free line and for the Freemius build.
+if ( ! $WOOCS->notes_for_free && ! is_dir( WOOCS_PATH . 'freemius' ) ) :
+	?>
+	<div id="woocs-mig-notice" style="display:none;margin:0 0 18px 0;padding:16px 44px 16px 18px;position:relative;border:1px solid #d7ddf0;border-left:4px solid #2f55d4;border-radius:4px;background:#f6f8fe;font-size:13px;line-height:1.6;color:#23282d;">
+		<div style="font-size:15px;font-weight:700;margin-bottom:6px;">FOX is moving to direct distribution</div>
+		<p style="margin:0 0 8px 0;">
+			Envato has introduced a pricing policy we find unacceptable, so active development, updates and
+			distribution of FOX are moving to <b>currency-switcher.com</b>. New versions are published there,
+			and the plugin may be removed from CodeCanyon at any time. Support periods can no longer be extended
+			on CodeCanyon either — once yours runs out, there is nothing to renew there.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			The new model is a yearly subscription covering updates and support, with a one-time lifetime option
+			for a single site. Because this is a migration, we are giving the people who have been with us on
+			CodeCanyon the best terms we will ever offer.
+		</p>
+		<p style="margin:0 0 10px 0;padding:10px 12px;background:#fff;border:1px dashed #b9c4e6;border-radius:3px;">
+			<b>CodeCanyon customers — 30% off, locked for life.</b> Use coupon code
+			<b style="font-family:Menlo,Consolas,monospace;font-size:14px;letter-spacing:1px;background:#eef2fd;padding:2px 8px;border-radius:3px;">FOXCC30</b>
+			at checkout. Nothing to fill in and no email needed — the discount is applied on the payment form.
+			<br>
+			<b style="text-decoration:underline;">The discount applies to every renewal, not just the first payment.</b>
+			Whatever the price becomes later, your rate stays where it is today, with updates and support included
+			for as long as your license is active.
+		</p>
+		<p style="margin:0 0 10px 0;">
+			Prices are going up in <b>31 January 2027</b>. Subscriptions started before then keep their original
+			rate permanently; anyone joining afterwards pays the new one. There is no rush on our side — we simply
+			cannot offer these terms again once the migration is over.
+		</p>
+		<p style="margin:0;">
+			<a href="https://currency-switcher.com/downloads?utm_source=plugin&amp;utm_medium=settings_notice&amp;utm_campaign=migration&amp;coupon=FOXCC30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">Lock in my 30% for life &rarr;</a>
+			<span style="margin-left:10px;color:#6b7280;">Your current copy keeps working either way.</span>
+		</p>
+		<a href="#" id="woocs-mig-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
+	</div>
+	<script>
+		( function () {
+			var key = 'woocs_migration_notice_hidden_1'; // bump the suffix to run a new campaign
+			var box = document.getElementById( 'woocs-mig-notice' );
+			if ( ! box ) {
+				return;
+			}
+			var hidden = false;
+			try {
+				hidden = window.localStorage.getItem( key ) === '1';
+			} catch ( e ) {
+				hidden = document.cookie.indexOf( key + '=1' ) !== -1;
+			}
+			if ( ! hidden ) {
+				box.style.display = 'block'; // reveal only when not dismissed, avoids a flash
+			}
+			document.getElementById( 'woocs-mig-close' ).addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				if ( ! window.confirm( 'Hide this message permanently? It will not be shown again in this browser.' ) ) {
+					return;
+				}
+				try {
+					window.localStorage.setItem( key, '1' );
+				} catch ( e ) {}
+				document.cookie = key + '=1; path=/; max-age=34560000; SameSite=Lax';
+				box.style.display = 'none';
+			} );
+		} )();
+	</script>
+<?php endif; ?>
+		
+		
 		<div id="tabs" class="woocs__tabs">
 			<?php if ( version_compare( WOOCOMMERCE_VERSION, WOOCS_MIN_WOOCOMMERCE, '<' ) ) : ?>
 				<b class="woocs_settings_version" >
@@ -504,6 +638,124 @@ global $WOOCS;
 										<div class="woocs__table-desc">
 											<div class="woocs__table-desc-body">
 												<?php echo esc_html__( 'Currencies rate auto update by WordPress cron.', 'woocommerce-currency-switcher' ); ?>
+											
+											
+											<?php
+												// Scheduler state for the rate auto update, read straight from the option.
+												$woocs_cron_state = get_option( 'woocs_rates_wpcron', array() );
+												$woocs_cron_event = ( is_array( $woocs_cron_state ) && isset( $woocs_cron_state['woocs_update_rates_wpcron'] ) )
+													? $woocs_cron_state['woocs_update_rates_wpcron']
+													: null;
+
+												if ( ! function_exists( 'woocs_format_time_gap' ) ) {
+													/**
+													 * Human readable gap, e.g. "8 hours 22 minutes 5 seconds".
+													 * Kept explicit instead of human_time_diff(), which rounds to a single unit.
+													 */
+													function woocs_format_time_gap( $seconds ) {
+														$seconds = abs( (int) $seconds );
+
+														if ( $seconds < 1 ) {
+															return esc_html__( 'less than a second', 'woocommerce-currency-switcher' );
+														}
+
+														$units = array(
+															DAY_IN_SECONDS    => array( 'day', 'days' ),
+															HOUR_IN_SECONDS   => array( 'hour', 'hours' ),
+															MINUTE_IN_SECONDS => array( 'minute', 'minutes' ),
+															1                 => array( 'second', 'seconds' ),
+														);
+
+														$parts = array();
+														foreach ( $units as $size => $names ) {
+															if ( $seconds >= $size ) {
+																$value     = floor( $seconds / $size );
+																$seconds  -= $value * $size;
+																$parts[]   = $value . ' ' . ( 1 == $value ? $names[0] : $names[1] );
+															}
+														}
+
+														// Two largest units are enough, plus seconds when the gap is short.
+														return implode( ' ', array_slice( $parts, 0, 3 ) );
+													}
+												}
+
+												if ( ! function_exists( 'woocs_format_time_stamp' ) ) {
+													/**
+													 * Site timezone, using the date and time formats configured in WordPress.
+													 */
+													function woocs_format_time_stamp( $timestamp ) {
+														return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) . ':s', (int) $timestamp );
+													}
+												}
+
+												$woocs_cron_box_style   = 'margin-top:10px;padding:8px 10px;border-left:3px solid #46b450;background:#f4fbf4;font-size:12px;line-height:1.7;';
+												$woocs_cron_value_style = 'color:#1e7e34;font-weight:600;';
+												$woocs_cron_warn_style  = 'color:#b32d2e;font-weight:600;';
+												?>
+												<div style="<?php echo esc_attr( $woocs_cron_box_style ); ?>">
+													<?php if ( empty( $woocs_cron_event ) || ! isset( $woocs_cron_event['next'] ) ) : ?>
+
+														<strong><?php echo esc_html__( 'Scheduler:', 'woocommerce-currency-switcher' ); ?></strong>
+														<span style="<?php echo esc_attr( $woocs_cron_warn_style ); ?>">
+															<?php echo esc_html__( 'no schedule stored yet. Select an interval above and press Save.', 'woocommerce-currency-switcher' ); ?>
+														</span>
+
+													<?php else : ?>
+
+														<?php
+														$woocs_now      = time();
+														$woocs_next     = (int) $woocs_cron_event['next'];
+														$woocs_last     = isset( $woocs_cron_event['last_run'] ) ? (int) $woocs_cron_event['last_run'] : 0;
+														$woocs_interval = isset( $woocs_cron_event['recurrence'] ) ? (int) $woocs_cron_event['recurrence'] : 0;
+														$woocs_overdue  = ( $woocs_next <= $woocs_now );
+														?>
+
+														<div>
+															<strong><?php echo esc_html__( 'Last run:', 'woocommerce-currency-switcher' ); ?></strong>
+															<?php if ( $woocs_last > 0 ) : ?>
+																<span style="<?php echo esc_attr( $woocs_cron_value_style ); ?>">
+																	<?php echo esc_html( woocs_format_time_stamp( $woocs_last ) ); ?>
+																</span>
+																(<?php printf( esc_html__( '%s ago', 'woocommerce-currency-switcher' ), esc_html( woocs_format_time_gap( $woocs_now - $woocs_last ) ) ); ?>)
+															<?php else : ?>
+																<span style="<?php echo esc_attr( $woocs_cron_warn_style ); ?>">
+																	<?php echo esc_html__( 'never', 'woocommerce-currency-switcher' ); ?>
+																</span>
+															<?php endif; ?>
+														</div>
+
+														<div>
+															<strong><?php echo esc_html__( 'Next run:', 'woocommerce-currency-switcher' ); ?></strong>
+															<span style="<?php echo esc_attr( $woocs_overdue ? $woocs_cron_warn_style : $woocs_cron_value_style ); ?>">
+																<?php echo esc_html( woocs_format_time_stamp( $woocs_next ) ); ?>
+															</span>
+															<?php if ( $woocs_overdue ) : ?>
+																(<?php printf( esc_html__( 'overdue by %s, waiting for the next request that loads WordPress', 'woocommerce-currency-switcher' ), esc_html( woocs_format_time_gap( $woocs_now - $woocs_next ) ) ); ?>)
+															<?php else : ?>
+																(<?php printf( esc_html__( 'in %s', 'woocommerce-currency-switcher' ), esc_html( woocs_format_time_gap( $woocs_next - $woocs_now ) ) ); ?>)
+															<?php endif; ?>
+														</div>
+
+														<?php if ( $woocs_interval > 0 ) : ?>
+															<div>
+																<strong><?php echo esc_html__( 'Interval:', 'woocommerce-currency-switcher' ); ?></strong>
+																<span style="<?php echo esc_attr( $woocs_cron_value_style ); ?>">
+																	<?php echo esc_html( woocs_format_time_gap( $woocs_interval ) ); ?>
+																</span>
+															</div>
+														<?php endif; ?>
+
+														<div style="opacity:.75;">
+															<?php echo esc_html__( 'Times are shown in the timezone configured in WordPress settings.', 'woocommerce-currency-switcher' ); ?>
+														</div>
+
+													<?php endif; ?>
+												</div>
+											
+											
+											
+											
 											</div>
 										</div>
 									</td>
@@ -1983,7 +2235,7 @@ global $WOOCS;
 																<ul class="woocs__features-gallery woocs__col-6">
 																	<li><a target="_blank" href="https://products-filter.com/downloads"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woof_banner.png" /></a></li>
 																	<li><a target="_blank" href="https://bulk-editor.com/downloads"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woobe_banner.png" /></a></li>
-																	<li><a target="_blank" href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woot_banner.png" /></a></li>
+																	<li><a target="_blank" href="https://products-tables.com/downloads"><img class="woocs-rounded" width="250" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woot_banner.png" /></a></li>
 
 																	<li><a href="https://wordpress.org/plugins/botoscope/" title="BOTOSCOPE - Bridge your WooCommerce store and Telegram" target="_blank">
 																			<img width="280" src="<?php echo esc_attr( WOOCS_LINK ); ?>img/botoscope.png" alt="BOTOSCOPE - Bridge your WooCommerce store and Telegram">
@@ -2166,7 +2418,7 @@ global $WOOCS;
 
 																	<td>
 																		<h6><?php esc_html_e( 'WOOT Products Tables', 'woocommerce-currency-switcher' ); ?>:</h6>
-																		<a href="https://codecanyon.pluginus.net/item/woot-woocommerce-products-tables/27928580" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woot_banner.png" alt="<?php esc_html_e( 'WOOT - WooCommerce Active Products Tables', 'woocommerce-currency-switcher' ); ?>" /></a>
+																		<a href="https://products-tables.com/downloads" target="_blank"><img src="<?php echo esc_attr( WOOCS_LINK ); ?>img/woot_banner.png" alt="<?php esc_html_e( 'WOOT - WooCommerce Active Products Tables', 'woocommerce-currency-switcher' ); ?>" /></a>
 																	</td>
 
 																</tr>

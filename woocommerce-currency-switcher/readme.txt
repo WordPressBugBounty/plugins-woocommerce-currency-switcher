@@ -3,9 +3,9 @@ Contributors: RealMag777
 Donate link: https://currency-switcher.com/downloads
 Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -185,6 +185,9 @@ R: [Video Tutorials](https://currency-switcher.com/video/)
 Q: More FAQ answers?
 R: [FAQ](https://currency-switcher.com/faq/)
 
+Q: Premium version?
+R: FOX Professional is available at https://currency-switcher.com/downloads — use coupon code FOXWP30 for 30% off. The discount applies to every renewal, not just the first payment, so your rate stays the same for as long as your license is active.
+
 Q: Where can I send security bug report about the plugin?
 R: You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/woocommerce-currency-switcher)
 
@@ -194,6 +197,31 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.2 - 03 September, 2026 =
+* Fixed: currency switching was unreliable when "Currency storage" was set to
+  Transient and the option "I am using cache plugin on my site" was enabled.
+  In that combination the selected currency could be applied to the prices but
+  not to the cart, the checkout totals or the currency switcher itself, so
+  different parts of one page could show different currencies.
+* Fixed: the selected currency is now applied to requests made by WooCommerce
+  Blocks and the Store API, so the block based mini cart, cart and checkout
+  render in the visitor's currency.
+* Fixed: prices were shown in the shop base currency inside content loaded by
+  page builders through the REST API, for example the Bricks side cart and
+  Bricks popups.
+* Fixed: fee lines (for example custom regional tax or surcharge fees) were not converted 
+  when an order was recalculated into another currency in wp-admin — the currency label 
+  changed while the fee amount stayed as it was.
+* Added: order recalculation on manual currency change can now be customized. 
+If a function named woocs_order_recalculated_custom exists on the site, 
+the plugin calls it right after an order has been recalculated to another currency 
+and before the order is saved, passing the order object, the new currency, 
+the previous currency and the exchange rate the order was stored with. 
+This makes it possible to override amounts of individual order items, 
+for example flat fees that must keep a fixed value in each currency instead 
+of being converted by rate. Works with both HPOS and legacy order storage. 
+If the function is not declared, behaviour is unchanged.
 
 = 1.5.1 - 27 July, 2026 =
 * Fixed: fatal error (infinite loop / memory exhaustion) on the order-received
@@ -540,5 +568,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 == Upgrade Notice ==
-[Look here for ADVANCED version of the plugin](https://currency-switcher.com/downloads)
-
+[Look here for ADVANCED version of the plugin](https://currency-switcher.com/downloads) — coupon FOXWP30 gives 30% off, on every renewal.

@@ -2005,6 +2005,17 @@ final class WOOCS {
 		if ( isset( $_REQUEST['woocs_block_price_hook'] ) ) {
 			return $price;
 		}
+		
+		// In non-multiple mode the order amounts are stored as they are and the
+		// wp-admin order editor must show exactly those numbers: WooCommerce
+		// renders the view cell through wc_price() (which passes this filter)
+		// but the editable inputs through wc_format_localized_price() (which
+		// does not), so converting here makes the two disagree and the typed
+		// value is then saved unconverted.
+		if ( ! $this->is_multiple_allowed && function_exists( 'woocs_is_admin_order_edit_context' ) && woocs_is_admin_order_edit_context() ) {
+			return $price;
+		}
+		
 		// fix 01/02/2023
 		if ( $product && 'variable' == $product->get_type() && $display === false ) {
 			return $price;
@@ -4459,7 +4470,12 @@ final class WOOCS {
 				update_post_meta( $post_id, '_order_currency', $selected_currency );
 			}
 		}
+		
+		if ( function_exists( 'woocs_order_recalculated_custom' ) ) {
+			woocs_order_recalculated_custom( $order, $selected_currency, $order_currency, $_woocs_order_rate );
+		}
 	}
+	
 
 	// ajax
 	public function woocs_update_order_rate() {
@@ -5762,7 +5778,14 @@ final class WOOCS {
 		if ( isset( $_REQUEST['currency'] ) and ! $this->is_currency_private( $_REQUEST['currency'] ) ) {
 			$currency = sanitize_text_field( $_REQUEST['currency'] );
 			$this->set_currency( $currency );
-			$this->statistic->register_switch( strtoupper( $this->escape( $currency ) ), strtoupper( $this->storage->get_val( 'woocs_user_country' ) ) );
+			
+			$browser_key_mode = ( $this->storage->type === 'transient' && get_option( 'woocs_shop_is_cached', 0 ) );
+			
+			if($browser_key_mode){
+				//do nothing to avoid stat double registration
+			}else{
+				$this->statistic->register_switch( strtoupper( $this->escape( $currency ) ), strtoupper( $this->storage->get_val( 'woocs_user_country' ) ) );
+			}
 		}
 	}
 

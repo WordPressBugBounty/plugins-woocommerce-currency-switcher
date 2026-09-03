@@ -4,16 +4,16 @@
 	Plugin URI: https://currency-switcher.com/
 	Description: Currency Switcher for WooCommerce that allows to the visitors and customers on your woocommerce store site switch currencies and optionally apply selected currency on checkout
 	Author: realmag777
-	Version: 1.5.1
+	Version: 1.5.2
 	Requires at least: 6.0
-	Tested up to: 7.0
+	Tested up to: 7.1
 	Requires PHP: 7.4
 	Text Domain: woocommerce-currency-switcher
 	Domain Path: /languages
 	Forum URI: https://pluginus.net/support/forum/woocs-woocommerce-currency-switcher-multi-currency-and-multi-pay-for-woocommerce/
 	Author URI: https://pluginus.net/
 	WC requires at least: 6.0
-	WC tested up to: 10.9
+	WC tested up to: 11.1
 	Requires Plugins: woocommerce
 	License: GPL-2.0-or-later
 	License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -40,11 +40,19 @@ if ( isset( $_SERVER['SCRIPT_URI'] ) ) {
 	$uri = wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['SCRIPT_URI'] ) ) );
 	$uri = explode( '/', trim( $uri['path'], ' /' ) );
 	if ( $uri[0] === 'wp-json' ) {
-		$show_legacy = array( 'widget-types', 'sidebars', 'widgets', 'batch', 'collection-data', 'cart', 'store' );
+		$show_legacy = array( 'widget-types', 'sidebars', 'widgets', 
+			'batch', 'collection-data', 'cart', 'store' );
 		$match       = array_intersect( $show_legacy, $uri );
 
 		if ( count( $match ) == 0 ) {
-			$allow = array( 'woocs', 'divi-ajax-filter' );
+			$allow = array( 'woocs', 'divi-ajax-filter', 'bricks' );
+			
+			$extra = get_option( 'woocs_rest_allow_namespaces', '' );
+			if ( $extra ) {
+				$extra = array_filter( array_map( 'trim', explode( ',', $extra ) ) );
+				$allow = array_merge( $allow, $extra );
+			}
+			
 			if ( isset( $uri[1] ) and ! in_array( $uri[1], $allow ) ) {
 				return; // !!it is important for different reports to exclude FOX influence
 			}
@@ -93,7 +101,7 @@ if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 	}
 }
 
-define( 'WOOCS_VERSION', '1.5.1' );
+define( 'WOOCS_VERSION', '1.5.2' );
 // define('WOOCS_VERSION', uniqid('woocs-'));//for dev test purposes to reset browser cache
 define( 'WOOCS_MIN_WOOCOMMERCE', '6.0' );
 define( 'WOOCS_PATH', plugin_dir_path( __FILE__ ) );
@@ -114,10 +122,9 @@ require_once WOOCS_PATH . 'classes/dashboard_stat.php';
 require_once WOOCS_PATH . 'classes/profiles.php';
 require_once WOOCS_PATH . 'classes/compatibility/compatibility.php';
 require_once WOOCS_PATH . 'classes/woocs_hpos.php';
-
 require_once WOOCS_PATH . 'classes/world_currencies.php';
 
-// 27-07-2026
+// 03-09-2026 - dd-mm-YYYY
 class WOOCS_STARTER {
 
 	private $default_woo_version   = 6.0;
@@ -427,34 +434,158 @@ function woocs_validate_currency( $currency ) {
 // wc_format_decimal() all assume the single store separator, so FOX must NOT
 // override separators there (otherwise saved amounts get corrupted, e.g. x100).
 if ( ! function_exists( 'woocs_is_admin_order_edit_context' ) ) {
+	/**
+	 * Detect the wp-admin ORDER context: the order edit and list screens
+	 * plus the AJAX requests dispatched from them.
+	 *
+	 * Two consumers rely on this:
+	 * 1) the separator filters - WooCommerce's editable amount fields, their JS
+	 *    validation and wc_format_decimal() all assume the single store separator,
+	 *    so FOX must not override separators there;
+	 * 2) raw_woocommerce_price() in non-multiple mode - the stored order amounts
+	 *    must be shown as they are, without the display-only conversion.
+	 *
+	 * @return bool
+	 */
 	function woocs_is_admin_order_edit_context() {
+
 		if ( ! is_admin() ) {
 			return false;
 		}
 
-		// AJAX actions dispatched from the order editor.
-		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() && isset( $_REQUEST['action'] ) ) {
-			$order_ajax = array(
-				'woocommerce_save_order_items',
-				'woocommerce_calc_line_taxes',
-				'woocommerce_add_order_item',
-				'woocommerce_remove_order_item',
-				'woocommerce_load_order_items',
-			);
-			return in_array( $_REQUEST['action'], $order_ajax, true );
+		// The request-based part never changes within one request, so it is
+		// resolved once. The screen check below is intentionally left out of
+		// the cache: the screen is set up later than the first call here.
+		static $request_context = null;
+
+		if ( null === $request_context ) {
+
+			$request_context = false;
+
+			if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+
+				// phpcs:disable WordPress.Security.NonceVerification.Recommended
+				$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : '';
+
+				// Actions that exist only inside the order editor.
+				$order_ajax = array(
+					'woocommerce_save_order_items',
+					'woocommerce_calc_line_taxes',
+					'woocommerce_add_order_item',
+					'woocommerce_remove_order_item',
+					'woocommerce_load_order_items',
+					'woocommerce_add_order_fee',
+					'woocommerce_add_order_shipping',
+					'woocommerce_add_order_tax',
+					'woocommerce_remove_order_tax',
+					'woocommerce_add_coupon_discount',
+					'woocommerce_remove_order_coupon',
+					'woocommerce_refund_line_items',
+					'woocommerce_delete_refund',
+					'woocommerce_get_order_details',
+					'woocommerce_grant_access_to_download',
+					'woocommerce_revoke_access_to_download',
+				);
+
+				if ( in_array( $action, $order_ajax, true ) ) {
+					$request_context = true;
+				}
+
+				// Anything else fired from an order screen - including the
+				// product/customer search modals, which are also used on other
+				// screens and therefore must not be trusted by action name alone.
+				if ( ! $request_context ) {
+					$referer = wp_get_referer();
+
+					if ( ! empty( $referer ) ) {
+						$query = wp_parse_url( $referer, PHP_URL_QUERY );
+
+						if ( ! empty( $query ) ) {
+							$args = array();
+							wp_parse_str( $query, $args );
+
+							if ( isset( $args['page'] ) && 0 === strpos( $args['page'], 'wc-orders' ) ) {
+								$request_context = true;
+							} elseif ( isset( $args['post_type'] ) && in_array( $args['post_type'], array( 'shop_order', 'shop_order_refund' ), true ) ) {
+								$request_context = true;
+							} elseif ( isset( $args['post'] ) && 'shop_order' === get_post_type( intval( $args['post'] ) ) ) {
+								$request_context = true;
+							}
+						}
+					}
+				}
+				// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+			} else {
+
+				// phpcs:disable WordPress.Security.NonceVerification.Recommended
+
+				// HPOS screens: admin.php?page=wc-orders and its order subtypes
+				// (wc-orders--shop_order_refund and so on).
+				$page = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+				if ( '' !== $page && 0 === strpos( $page, 'wc-orders' ) ) {
+					$request_context = true;
+				}
+
+				// Classic list screen: edit.php?post_type=shop_order.
+				// $_REQUEST is used on purpose: the classic order save is a POST
+				// to post.php with action=editpost, so $_GET is empty there.
+				if ( ! $request_context ) {
+					$post_type = isset( $_REQUEST['post_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_type'] ) ) : '';
+					if ( in_array( $post_type, array( 'shop_order', 'shop_order_refund' ), true ) ) {
+						$request_context = true;
+					}
+				}
+
+				// Classic edit screen and its save: post.php?post=ID&action=edit
+				// carries post, the save carries post_ID.
+				if ( ! $request_context ) {
+					$post_id = 0;
+
+					if ( isset( $_REQUEST['post_ID'] ) ) {
+						$post_id = intval( $_REQUEST['post_ID'] );
+					} elseif ( isset( $_REQUEST['post'] ) ) {
+						$post_id = intval( $_REQUEST['post'] );
+					}
+
+					if ( $post_id > 0 && in_array( get_post_type( $post_id ), array( 'shop_order', 'shop_order_refund' ), true ) ) {
+						$request_context = true;
+					}
+				}
+				// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			}
 		}
 
-		// HPOS order screen: admin.php?page=wc-orders&action=edit|new
-		if ( isset( $_GET['page'] ) && 'wc-orders' === $_GET['page'] ) {
+		if ( $request_context ) {
 			return true;
 		}
 
-		// Classic order screen: edit.php?post_type=shop_order or post.php?post=ID&action=edit
-		if ( isset( $_GET['post_type'] ) && 'shop_order' === $_GET['post_type'] ) {
-			return true;
-		}
-		if ( isset( $_GET['post'], $_GET['action'] ) && 'edit' === $_GET['action'] ) {
-			return 'shop_order' === get_post_type( intval( $_GET['post'] ) );
+		// Screen check. Evaluated on every call because get_current_screen()
+		// returns nothing until the current_screen hook has run, while this
+		// function is called much earlier than that.
+		if ( function_exists( 'get_current_screen' ) ) {
+			$screen = get_current_screen();
+
+			if ( is_object( $screen ) && ! empty( $screen->id ) ) {
+
+				if ( in_array( $screen->id, array( 'shop_order', 'edit-shop_order' ), true ) ) {
+					return true;
+				}
+
+				if ( false !== strpos( $screen->id, 'wc-orders' ) ) {
+					return true;
+				}
+
+				global $WOOCS;
+
+				if ( is_object( $WOOCS ) && is_object( $WOOCS->woocs_hpos ) ) {
+					$order_screen = $WOOCS->woocs_hpos->getOrderScreenId();
+
+					if ( ! empty( $order_screen ) && $screen->id === $order_screen ) {
+						return true;
+					}
+				}
+			}
 		}
 
 		return false;

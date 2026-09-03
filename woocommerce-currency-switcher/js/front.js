@@ -5,19 +5,49 @@ var woocs_sumbit_currency_changing = true;//just a flag variable for drop-down r
 
 // Unique per-browser storage key. Generated once and kept in localStorage forever.
 // Used ONLY in browser key mode as the storage key instead of the visitor IP.
+// IMPORTANT: the value must stay lowercase. The PHP side runs it through
+// sanitize_key(), which lowercases, so an uppercase character here would produce
+// a different md5 on the server and silently split the storage bucket in two.
 var woocs_sk = '';
 if (typeof woocs_browser_key_mode !== 'undefined' && woocs_browser_key_mode) {
     try {
         woocs_sk = localStorage.getItem('woocs_sk') || '';
         if (!woocs_sk) {
             woocs_sk = (window.crypto && crypto.randomUUID)
-                ? crypto.randomUUID().replace(/-/g, '')
-                : String(Date.now()) + Math.random().toString(36).slice(2, 12);
+                    ? crypto.randomUUID().replace(/-/g, '')
+                    : String(Date.now()) + Math.random().toString(36).slice(2, 12);
             localStorage.setItem('woocs_sk', woocs_sk);
         }
     } catch (e) {
         woocs_sk = ''; // private mode / storage disabled: silently fall back to the IP based key
     }
+}
+
+// Must run at top level, NOT on document ready: WooCommerce Blocks and the Store API
+// start calling fetch() before ready fires, and anything sent earlier misses the key.
+// jQuery covers admin-ajax and wc-ajax (see ajaxSend below); fetch() based callers -
+// Blocks, the Store API, PayPal PPCP - never pass through jQuery, so the key has to
+// travel as a request header. A header, not a query argument: a per visitor query
+// argument would fragment the page cache per visitor.
+if (woocs_sk && window.fetch) {
+    var woocs_native_fetch = window.fetch;
+    window.fetch = function (input, init) {
+
+        var url = (typeof input === 'string') ? input : (input && input.url) || '';
+
+        // Same origin only. A custom header on a cross origin request triggers a
+        // preflight and can break payment SDKs loaded from third party domains.
+        if (url.indexOf('http') === 0 && url.indexOf(window.location.origin) !== 0) {
+            return woocs_native_fetch(input, init);
+        }
+
+        init = init || {};
+        init.headers = new Headers(init.headers || (input && input.headers) || {});
+        if (!init.headers.has('X-WOOCS-SK')) {
+            init.headers.set('X-WOOCS-SK', woocs_sk);
+        }
+        return woocs_native_fetch(input, init);
+    };
 }
 
 jQuery(function ($) {
@@ -27,7 +57,7 @@ jQuery(function ($) {
     }
 
     woocs_array_of_get = JSON.parse(woocs_array_of_get);
-    
+
     // Attach the browser key to every AJAX request (admin-ajax and wc-ajax),
     // so the cart and the checkout resolve the same currency as the catalog pages.
     if (woocs_sk) {
@@ -36,6 +66,27 @@ jQuery(function ($) {
                 settings.data += (settings.data ? '&' : '') + 'woocs_sk=' + encodeURIComponent(woocs_sk);
             }
         });
+
+
+        // A currency arrived in the URL, but a plain page load carries no browser key,
+        // so the value was stored under the IP key. Mirror it to the browser key bucket
+        // before any redraw runs, otherwise the redraw reads an empty bucket and falls
+        // back to the base currency.
+        // Uppercased on purpose: the URL handler uses strtoupper() while set_currency()
+        // stores whatever it is given, so a lowercase code would be saved as is and then
+        // never match the currency array keys.
+        if (woocs_array_of_get.currency !== undefined) {
+            jQuery.post(woocs_ajaxurl, {
+                action: 'woocs_set_currency_ajax',
+                currency: String(woocs_array_of_get.currency).toUpperCase()
+            }, function () {
+                // The mini cart HTML is cached in sessionStorage keyed by the CART hash,
+                // and the currency is not part of that hash - so the stale fragment would
+                // otherwise survive every later navigation. Refresh it now that the
+                // storage bucket already holds the new currency.
+                jQuery(document.body).trigger('wc_fragment_refresh');
+            });
+        }
     }
 
     //wp-content\plugins\woocommerce\assets\js\frontend\cart.js
@@ -302,7 +353,7 @@ jQuery(function ($) {
                         if (typeof data === 'string') {
                             data = JSON.parse(data);
                         }
-                            
+
                         if (jQuery.isEmptyObject(data)) {
                             woocs_sumbit_currency_changing = true;
                         }
@@ -520,7 +571,7 @@ function woocs_redirect(currency) {
      l = l.replace(/(&currency=[a-zA-Z]+)/g, '');
      */
 
-    if (woocs_special_ajax_mode || woocs_sk) {
+    if (woocs_special_ajax_mode) {
         string_of_get = "";
 
         var data = {
@@ -533,6 +584,7 @@ function woocs_redirect(currency) {
         });
 
     } else {
+
         if (Object.keys(woocs_array_of_get).length > 0) {
             let get_values = [];
             jQuery.each(woocs_array_of_get, function (index, value) {
@@ -540,7 +592,20 @@ function woocs_redirect(currency) {
             });
             string_of_get += get_values.join("&");
         }
-        window.location = l + string_of_get + id_key;
+
+        if (woocs_sk) {
+            jQuery.post(woocs_ajaxurl, {
+                action: "woocs_set_currency_ajax",
+                currency: currency,
+                woocs_sk
+            }, function (value) {
+                window.location = l + string_of_get + id_key;
+            });
+
+        } else {
+            window.location = l + string_of_get + id_key;
+        }
+
     }
 }
 
@@ -696,4 +761,3 @@ function woocs_init_ddslick_select() {
         });
     });
 }
-
