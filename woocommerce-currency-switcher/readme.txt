@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,18 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.3 - 04 September, 2026 =
+* Fixed: automatic rate updates never ran on shops with regular REST API
+  traffic. The rate update scheduler was hooked to rest_api_init without
+  limiting the number of accepted arguments, so WordPress passed the
+  WP_REST_Server instance into the method's $reset parameter. Every REST
+  request therefore restarted the schedule from the current time and cleared
+  the last run marker, which pushed the next run permanently into the future.
+  Rates stayed frozen at the values stored before the upgrade. Sites with
+  block based cart and checkout, the Store API, page builders or headless
+  front ends were affected the most, sites with little or no REST traffic were
+  not affected. Reported by Performize.it. 
 
 = 1.5.2 - 03 September, 2026 =
 * Fixed: currency switching was unreliable when "Currency storage" was set to

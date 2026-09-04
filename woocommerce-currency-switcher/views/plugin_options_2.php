@@ -94,11 +94,11 @@ if ( $WOOCS->notes_for_free ) :
 			is active.
 		</p>
 		<p style="margin:0 0 10px 0;">
-			The coupon is valid until <b>31 January 2027</b>, and prices go up in February. Subscriptions started
+			The prices go up in <b>January 2027</b>. Subscriptions started
 			before then keep their original rate permanently.
 		</p>
 		<p style="margin:0;">
-			<a href="https://currency-switcher.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=FOXCC30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">See what PRO adds &rarr;</a>
+			<a href="https://currency-switcher.com/downloads?utm_source=plugin&amp;utm_medium=free_notice&amp;utm_campaign=upsell&amp;coupon=FOXWP30" target="_blank" rel="noopener" style="display:inline-block;padding:7px 16px;border-radius:3px;background:#2f55d4;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 3px 5px 0 rgba(47,85,212,0.3);">See what PRO adds &rarr;</a>
 			<span style="margin-left:10px;color:#6b7280;">The free version stays free and keeps working.</span>
 		</p>
 		<a href="#" id="woocs-mig-close" title="Hide permanently" style="position:absolute;top:10px;right:12px;text-decoration:none;color:#8a8f98;font-size:16px;line-height:1;">&times;</a>
@@ -164,7 +164,7 @@ if ( ! $WOOCS->notes_for_free && ! is_dir( WOOCS_PATH . 'freemius' ) ) :
 			for as long as your license is active.
 		</p>
 		<p style="margin:0 0 10px 0;">
-			Prices are going up in <b>31 January 2027</b>. Subscriptions started before then keep their original
+			Prices are going up in <b>January 2027</b>. Subscriptions started before then keep their original
 			rate permanently; anyone joining afterwards pays the new one. There is no rush on our side — we simply
 			cannot offer these terms again once the migration is over.
 		</p>

@@ -4,7 +4,7 @@
 	Plugin URI: https://currency-switcher.com/
 	Description: Currency Switcher for WooCommerce that allows to the visitors and customers on your woocommerce store site switch currencies and optionally apply selected currency on checkout
 	Author: realmag777
-	Version: 1.5.2
+	Version: 1.5.3
 	Requires at least: 6.0
 	Tested up to: 7.1
 	Requires PHP: 7.4
@@ -101,7 +101,7 @@ if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 	}
 }
 
-define( 'WOOCS_VERSION', '1.5.2' );
+define( 'WOOCS_VERSION', '1.5.3' );
 // define('WOOCS_VERSION', uniqid('woocs-'));//for dev test purposes to reset browser cache
 define( 'WOOCS_MIN_WOOCOMMERCE', '6.0' );
 define( 'WOOCS_PATH', plugin_dir_path( __FILE__ ) );
@@ -124,7 +124,7 @@ require_once WOOCS_PATH . 'classes/compatibility/compatibility.php';
 require_once WOOCS_PATH . 'classes/woocs_hpos.php';
 require_once WOOCS_PATH . 'classes/world_currencies.php';
 
-// 03-09-2026 - dd-mm-YYYY
+// 04-09-2026 - dd-mm-YYYY
 class WOOCS_STARTER {
 
 	private $default_woo_version   = 6.0;

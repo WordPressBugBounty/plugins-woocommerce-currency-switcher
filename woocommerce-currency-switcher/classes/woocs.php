@@ -477,9 +477,9 @@ final class WOOCS {
 		add_action( 'woocs_update_rates_wpcron', array( $this, 'rate_auto_update' ), 10 );
 		$this->cron           = new PN_WP_CRON_WOOCS( 'woocs_rates_wpcron' );
 		$this->wp_cron_period = (int) $this->get_woocs_cron_schedules( $this->rate_auto_update );
-		add_action( 'init', array( $this, 'make_rates_auto_update' ) ); // auto update rate
-		add_action( 'admin_init', array( $this, 'make_rates_auto_update' ) ); // auto update rate
-		add_action( 'rest_api_init', array( $this, 'make_rates_auto_update' ) ); // auto update rate
+		add_action( 'init', array( $this, 'make_rates_auto_update' ), 10, 0 ); // auto update rate
+		add_action( 'admin_init', array( $this, 'make_rates_auto_update') , 10, 0  ); // auto update rate
+		add_action( 'rest_api_init', array( $this, 'make_rates_auto_update') , 10, 0  ); // auto update rate
 		// ***
 		if ( $this->is_fixed_enabled or $this->is_geoip_manipulation ) {
 			$this->fixed = new WOOCS_FIXED_PRICE();
@@ -927,7 +927,7 @@ final class WOOCS {
 	public function make_rates_auto_update( $reset = false ) {
 		if ( $this->rate_auto_update != 'no' and ! empty( $this->rate_auto_update ) ) {
 			if ( $this->wp_cron_period ) {
-				if ( $reset ) {
+				if ( true === $reset ) {
 					$this->cron->reset( $this->cron_hook, $this->wp_cron_period );
 				}
 
