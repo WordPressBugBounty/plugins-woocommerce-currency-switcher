@@ -48,12 +48,15 @@ class WoocsHpos {
 	 * @return string
 	 */
 	public function getOrderScreenId(): string {
-		if ( ! function_exists( 'wc_get_container' ) || ! class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) ) {
+		if ( ! function_exists( 'wc_get_container' )
+			|| ! class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' )
+			|| ! function_exists( 'wc_get_page_screen_id' )
+			|| ! class_exists( 'WC_Admin_Menus' ) ) {
 			return '';
 		}
 		// @phpstan-ignore-next-line
 		$screen = wc_get_container()->get( HposController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
-		return $screen;
+		return (string) $screen;
 	}
 
 	/**

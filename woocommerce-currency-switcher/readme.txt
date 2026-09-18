@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.3
+Stable tag: 1.5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -151,7 +151,7 @@ Also the plugin has ajaxed shortcode/widget of [currency converter](https://demo
 
 &#9989;&nbsp;[HUSKY - Products Filter for WooCommerce](https://wordpress.org/plugins/woocommerce-products-filter/): is an extendable, flexible and robust plugin for WooCommerce that allows your site customers filter products by products categories, attributes, tags, custom taxonomies and price. Supports latest version of the WooCommerce plugin. A must have plugin for your WooCommerce powered online store! Maximum flexibility!
 
-&#9989;&nbsp;[BEAR - Bulk Editor for WooCommerce](https://wordpress.org/plugins/woo-bulk-editor/): WordPress plugin for managing and bulk edit WooCommerce Products data in robust and flexible way! Be professionals with managing data of your woocommerce e-shop!
+&#9989;&nbsp;[BEAR - Bulk Editor for WooCommerce (MCP Server)](https://wordpress.org/plugins/woo-bulk-editor/): WordPress plugin for managing and bulk edit WooCommerce Products data in robust and flexible way! Be professionals with managing data of your woocommerce e-shop!
 
 &#9989;&nbsp;[WooCommerce Active Products Tables](https://wordpress.org/plugins/profit-products-tables-for-woocommerce/): is WooCommerce plugin for displaying shop products in table format. Tables makes focus for your buyers on the things they want to get, nothing superfluous, just what the client wants, and full attention to what is offered!
 
@@ -197,6 +197,12 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.4 - 18 September, 2026 =
+* Fixed: fatal error "Call to undefined function wc_get_page_screen_id()" in background 
+cron tasks on sites where a third party plugin makes is_admin() return true inside wp-cron, 
+while the WooCommerce admin functions are not loaded. The screen id helper now returns 
+an empty string instead of calling admin only functions
 
 = 1.5.3 - 04 September, 2026 =
 * Fixed: automatic rate updates never ran on shops with regular REST API
@@ -580,4 +586,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 
 == Upgrade Notice ==
-[Look here for ADVANCED version of the plugin](https://currency-switcher.com/downloads) — coupon FOXWP30 gives 30% off, on every renewal.
+
