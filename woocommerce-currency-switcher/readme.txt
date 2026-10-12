@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.4
+Stable tag: 1.5.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,15 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.5 - 09 October, 2026 =
+* Security fix. Thanks to Je22y for the responsible disclosure and to Patchstack for coordinating it
+* Accessibility: the ddslick drop-down no longer renders an empty image when flags are turned off, and flag images get an empty alt attribute because the currency text is shown next to them
+* Accessibility: the ddslick drop-down uses span elements instead of labels without a form control for the currency text
+* Accessibility: every currency switcher on the page gets its own unique id (before, all ddslick switchers had the same id "undefined"), and the currency select gets an aria-label
+* Fix: the wSelect drop-down no longer shows an empty icon when flags are turned off
+* New: filter woocs_skip_conversion for developers, returning true leaves a price as it is without currency conversion
+* New: Pulse Verity rate aggregator for crypto currencies, works with USD as the store base currency and requires a free API key, fiat currency rates are left unchanged
 
 = 1.5.4 - 18 September, 2026 =
 * Fixed: fatal error "Call to undefined function wc_get_page_screen_id()" in background 

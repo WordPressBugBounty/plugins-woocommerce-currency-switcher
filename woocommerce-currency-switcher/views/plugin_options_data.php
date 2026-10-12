@@ -12,6 +12,7 @@ $aggregators = array(
 	// 'free_converter' => 'The Free Currency Converter',
 		'fixer'         => 'Fixer',
 	'cryptocompare'     => 'CryptoCompare',
+	'pulseverity'       => 'Pulse Verity (crypto only, USD base)',
 	'ecb'               => 'www.ecb.europa.eu',
 	// 'free_ecb' => 'The Free Currency Converter by European Central Bank', // ---
 	// 'micro' => 'European Central Bank [www.ratesapi.io]', //---

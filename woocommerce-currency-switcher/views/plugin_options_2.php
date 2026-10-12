@@ -94,7 +94,7 @@ if ( $WOOCS->notes_for_free ) :
 			is active.
 		</p>
 		<p style="margin:0 0 10px 0;">
-			The prices go up in <b>January 2027</b>. Subscriptions started
+			The prices go up in January 2027. Subscriptions started
 			before then keep their original rate permanently.
 		</p>
 		<p style="margin:0;">
@@ -546,7 +546,8 @@ if ( ! $WOOCS->notes_for_free && ! is_dir( WOOCS_PATH . 'freemius' ) ) :
 												<a href="https://fixer.io/signup/free" target="_blank">Fixer</a>,
 												<a href="https://openexchangerates.org/signup"  target="_blank">Open exchange rates</a>,
 												<a href="https://currencylayer.com/product"  target="_blank">Currencylayer</a>,
-												<a href="https://app.currencyapi.com/dashboard"  target="_blank">Currencyapi</a>
+												<a href="https://app.currencyapi.com/dashboard"  target="_blank">Currencyapi</a>,
+												<a href="https://thepulse.markets/developers"  target="_blank">Pulse Verity</a>
 											</div>
 										</div>
 									</td>
@@ -2518,7 +2519,7 @@ if ( ! $WOOCS->notes_for_free && ! is_dir( WOOCS_PATH . 'freemius' ) ) :
 																					if ( $is_etalon ) :
 																						?>
 																						readonly=""<?php endif; ?> 
-																					value="<?php echo esc_attr( $currency['rate'] ); ?>" 
+																					value="<?php echo esc_attr( $WOOCS->rate_to_string( $currency['rate'] ) ); ?>"
 																					name="woocs_rate[]" 
 																					placeholder="<?php esc_html_e( 'Exchange rate', 'woocommerce-currency-switcher' ); ?>" />
 																			<span>&nbsp;+&nbsp;</span>

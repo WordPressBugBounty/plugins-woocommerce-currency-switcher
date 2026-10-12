@@ -208,9 +208,15 @@ final class WOOCS {
 		// +++
 		// simple checkout itercept
 		if ( isset( $_REQUEST['action'] ) and $_REQUEST['action'] == 'woocommerce_checkout' ) {
-			$_REQUEST['woocommerce-currency-switcher'] = $this->escape( $this->storage->get_val( 'woocs_current_currency' ) );
-			$this->current_currency                    = $this->escape( $this->storage->get_val( 'woocs_current_currency' ) );
+			
+			$stored_currency = $this->storage->get_val( 'woocs_current_currency' );
+			if ( ! $this->is_currency_enabled( $stored_currency ) ) {
+				$stored_currency = $this->default_currency;
+			}
+			$_REQUEST['woocommerce-currency-switcher'] = $stored_currency;
+			$this->current_currency                    = $stored_currency;
 			$_REQUEST['woocs_in_order_currency']       = $this->current_currency;
+			
 		}
 
 		// paypal query itercept
@@ -264,8 +270,10 @@ final class WOOCS {
 			}
 		}
 		// +++
-		if ( $this->storage->is_isset( 'woocs_current_currency' ) ) {
-			$this->current_currency = $this->storage->get_val( 'woocs_current_currency' );
+		// A stored value is used only if the store still has this currency
+		$stored_currency = $this->storage->is_isset( 'woocs_current_currency' ) ? $this->storage->get_val( 'woocs_current_currency' ) : '';
+		if ( $this->is_currency_enabled( $stored_currency ) ) {
+			$this->current_currency = $stored_currency;
 		} else {
 			$this->current_currency = $this->default_currency;
 		}
@@ -667,9 +675,15 @@ final class WOOCS {
 		// simple checkout itercept
 		$currencies = $this->get_currencies();
 		if ( isset( $_REQUEST['action'] ) and $_REQUEST['action'] == 'woocommerce_checkout' ) {
-			$_REQUEST['woocommerce-currency-switcher'] = $this->escape( $this->storage->get_val( 'woocs_current_currency' ) );
-			$this->current_currency                    = $this->escape( $this->storage->get_val( 'woocs_current_currency' ) );
+			
+			$stored_currency = $this->storage->get_val( 'woocs_current_currency' );
+			if ( ! $this->is_currency_enabled( $stored_currency ) ) {
+				$stored_currency = $this->default_currency;
+			}
+			$_REQUEST['woocommerce-currency-switcher'] = $stored_currency;
+			$this->current_currency                    = $stored_currency;
 			$_REQUEST['woocs_in_order_currency']       = $this->current_currency;
+			
 		}
 
 		// paypal query itercept
@@ -724,8 +738,10 @@ final class WOOCS {
 		}
 
 		// +++
-		if ( $this->storage->is_isset( 'woocs_current_currency' ) ) {
-			$this->current_currency = $this->storage->get_val( 'woocs_current_currency' );
+		// A stored value is used only if the store still has this currency
+		$stored_currency = $this->storage->is_isset( 'woocs_current_currency' ) ? $this->storage->get_val( 'woocs_current_currency' ) : '';
+		if ( $this->is_currency_enabled( $stored_currency ) ) {
+			$this->current_currency = $stored_currency;
 		} else {
 			$this->current_currency = $this->default_currency;
 		}
@@ -1068,7 +1084,7 @@ final class WOOCS {
 						continue;
 					}
 
-					$message .= '<li><b>' . $code . '</b>: <i>' . $curr['rate'] . '</i><br /><br /></li>';
+					$message .= '<li><b>' . $code . '</b>: <i>' . $this->rate_to_string( $curr['rate'] ) . '</i><br /><br /></li>';
 				}
 				$message .= '</ul>';
 				// ***
@@ -1857,6 +1873,11 @@ final class WOOCS {
 			$this->reset_currency();
 		}
 
+		// WooCommerce must never get a currency the store does not have, it would be saved on the order
+		if ( $this->current_currency !== $this->default_currency && ! $this->is_currency_enabled( $this->current_currency ) ) {
+			return $this->default_currency;
+		}
+
 		return $this->current_currency;
 	}
 
@@ -2002,6 +2023,12 @@ final class WOOCS {
 
 	public function raw_woocommerce_price( $price, $product = null, $min_max = null, $display = null ) {
 
+		// generic bypass seam: TRUE means the amount is final and already
+		// expressed in the active currency, so no conversion is applied
+		if ( apply_filters( 'woocs_skip_conversion', false, $price, $product ) ) {
+			return $price;
+		}
+
 		if ( isset( $_REQUEST['woocs_block_price_hook'] ) ) {
 			return $price;
 		}
@@ -2024,10 +2051,16 @@ final class WOOCS {
 		if ( empty( $price ) ) {
 			return $price;
 		}
-		if ( isset( $_REQUEST['woocs_raw_woocommerce_price_currency'] ) ) {
-			$this->current_currency = $_REQUEST['woocs_raw_woocommerce_price_currency'];
-		}
+		
+		
 		$currencies = $this->get_currencies();
+		// Explicit currency for this price: only an enabled, public currency of the store is accepted
+		if ( isset( $_REQUEST['woocs_raw_woocommerce_price_currency'] ) && is_string( $_REQUEST['woocs_raw_woocommerce_price_currency'] ) ) {
+			$requested_currency = sanitize_text_field( wp_unslash( $_REQUEST['woocs_raw_woocommerce_price_currency'] ) );
+			if ( isset( $currencies[ $requested_currency ] ) && ! $this->is_currency_private( $requested_currency ) ) {
+				$this->current_currency = $requested_currency;
+			}
+		}
 
 		if ( in_array( $this->current_currency, $this->no_cents )/* OR $currencies[$this->current_currency]['hide_cents'] == 1 */ ) {
 			$precision = 0;
@@ -2797,6 +2830,16 @@ final class WOOCS {
 
 		return $freebase_id;
 	}
+	
+	// Rates of cheap coins are tiny and PHP prints such floats as 1.2E-5, show them as plain decimals
+	public function rate_to_string( $rate ) {
+		if ( ! is_numeric( $rate ) || 0.0 === (float) $rate ) {
+			return $rate;
+		}
+		$rate     = (float) $rate;
+		$decimals = max( 0, 15 - (int) floor( log10( abs( $rate ) ) ) - 1 );
+		return rtrim( rtrim( number_format( $rate, min( $decimals, 20 ), '.', '' ), '0' ), '.' );
+	}
 
 	// ajax
 	public function get_rate() {
@@ -2848,7 +2891,7 @@ final class WOOCS {
 		}
 		// ***
 		if ( $is_ajax ) {
-			echo esc_html( $request );
+			echo esc_html( $this->rate_to_string( $request ) );
 			exit;
 		} else {
 			return $request;
@@ -2999,7 +3042,8 @@ final class WOOCS {
 		if ( ! $order ) {
 			return $order_id;
 		}
-		$order->update_meta_data( '_woocs_order_rate', $currencies[ $this->current_currency ]['rate'] );
+		
+		$order->update_meta_data( '_woocs_order_rate', $this->get_order_rate( $currencies ) );
 		$order->update_meta_data( '_woocs_order_base_currency', $this->default_currency );
 		$order->update_meta_data( '_woocs_order_currency_changed_mannualy', 0 );
 		$order->save();
@@ -3024,7 +3068,8 @@ final class WOOCS {
 		if ( ! $order ) {
 			return;
 		}
-		$order->update_meta_data( '_woocs_order_rate', $currencies[ $this->current_currency ]['rate'] );
+		
+		$order->update_meta_data( '_woocs_order_rate', $this->get_order_rate( $currencies ) );
 		$order->update_meta_data( '_woocs_order_base_currency', $this->default_currency );
 		$order->update_meta_data( '_woocs_order_currency_changed_mannualy', 0 );
 		$order->save();
@@ -3061,8 +3106,11 @@ final class WOOCS {
 	public function woocommerce_email_actions( $email_actions ) {
 		// $_REQUEST['woocs_order_emails_is_sending'] = 1;//https://wordpress.org/support/topic/fox-plugin-webhook-json-data-polluted-by-woocs_order_emails_is_sending/#post-18779498
 		if ( isset( $_REQUEST['woocs_in_order_currency'] ) ) {
-			$this->current_currency = sanitize_text_field( $_REQUEST['woocs_in_order_currency'] );
-			// $this->default_currency = $_REQUEST['woocs_in_order_currency'];
+			// Only a currency of the store is accepted (a hidden one for order managers only), anything else keeps the current one
+			$in_order_currency = is_string( $_REQUEST['woocs_in_order_currency'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['woocs_in_order_currency'] ) ) : '';
+			if ( $this->is_currency_enabled( $in_order_currency ) && ( ! $this->is_currency_private( $in_order_currency ) || current_user_can( 'edit_shop_orders' ) ) ) {
+				$this->current_currency = $in_order_currency;
+			}
 		} else {
 			global $post;
 			if ( is_object( $post ) and $post->post_type == 'shop_order' ) {
@@ -3600,7 +3648,8 @@ final class WOOCS {
 	}
 
 	public function set_currency( $currency = '' ) {
-		if ( empty( $currency ) ) {
+		// Only a currency of the store can become current and be stored for the visitor
+		if ( empty( $currency ) || ! $this->is_currency_enabled( $currency ) ) {
 			$currency = $this->default_currency;
 		}
 
@@ -3688,13 +3737,12 @@ final class WOOCS {
 
 	public function woocommerce_package_rates( $rates, $package ) {
 		$currencies  = $this->get_currencies();
-		$new_version = false;
 		$new_version = true;
 
 		// ***
 		if ( $this->is_multiple_allowed ) {
-			if ( $this->current_currency != $this->default_currency ) {
-				$currencies = $this->get_currencies();
+			if ( $this->current_currency != $this->default_currency && isset( $currencies[ $this->current_currency ] ) ) {
+
 				foreach ( $rates as $rate ) {
 
 					$value = floatval( $rate->cost ) * floatval( $currencies[ $this->current_currency ]['rate'] );
@@ -5775,8 +5823,10 @@ final class WOOCS {
 	}
 
 	public function woocs_set_currency_ajax() {
-		if ( isset( $_REQUEST['currency'] ) and ! $this->is_currency_private( $_REQUEST['currency'] ) ) {
-			$currency = sanitize_text_field( $_REQUEST['currency'] );
+		
+		$currency = isset( $_REQUEST['currency'] ) && is_string( $_REQUEST['currency'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['currency'] ) ) : '';
+		if ( $this->is_currency_enabled( $currency ) && ! $this->is_currency_private( $currency ) ) {
+
 			$this->set_currency( $currency );
 			
 			$browser_key_mode = ( $this->storage->type === 'transient' && get_option( 'woocs_shop_is_cached', 0 ) );
@@ -5812,6 +5862,24 @@ final class WOOCS {
 	public function is_currency_private( $currency ) {
 		$currencies = $this->get_currencies();
 		return isset( $currencies[ $currency ]['hide_on_front'] ) and $currencies[ $currency ]['hide_on_front'];
+	}
+	
+	
+	// True only for a currency from the store currency list
+	public function is_currency_enabled( $currency ) {
+		if ( ! is_string( $currency ) || '' === $currency ) {
+			return false;
+		}
+		$currencies = $this->get_currencies();
+		return isset( $currencies[ $currency ] );
+	}
+
+	// Rate saved on the order, the base currency rate if the current currency is not in the list
+	private function get_order_rate( $currencies ) {
+		if ( isset( $currencies[ $this->current_currency ]['rate'] ) ) {
+			return $currencies[ $this->current_currency ]['rate'];
+		}
+		return isset( $currencies[ $this->default_currency ]['rate'] ) ? $currencies[ $this->default_currency ]['rate'] : 1;
 	}
 
 	public function delete_profiles_data() {

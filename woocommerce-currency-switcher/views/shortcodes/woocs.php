@@ -107,7 +107,7 @@ if ( ! isset( $shortcode_params['sd'] ) ) {
 			?>
 			woocs_show_flags<?php endif; ?>" data-ver="<?php echo esc_attr( WOOCS_VERSION ); ?>">
 			<input type="hidden" name="woocommerce-currency-switcher" value="<?php echo esc_attr( $this->current_currency ); ?>" />
-			<select name="woocommerce-currency-switcher" data-width="<?php echo esc_attr( $width ); ?>" data-flag-position="<?php echo esc_attr( $flag_position ); ?>" class="woocommerce-currency-switcher <?php echo esc_attr( $css_class ); ?>" onchange="woocs_redirect(this.value); void(0);">
+			<select name="woocommerce-currency-switcher" id="<?php echo esc_attr( uniqid( 'woocs-switcher-' ) ); ?>" aria-label="<?php esc_attr_e( 'Currency switcher', 'woocommerce-currency-switcher' ); ?>" data-width="<?php echo esc_attr( $width ); ?>" data-flag-position="<?php echo esc_attr( $flag_position ); ?>" class="woocommerce-currency-switcher <?php echo esc_attr( $css_class ); ?>" onchange="woocs_redirect(this.value); void(0);">
 				<?php foreach ( $all_currencies as $key => $currency ) : ?>
 
 					<?php
@@ -134,17 +134,12 @@ if ( ! isset( $shortcode_params['sd'] ) ) {
 					}
 					?>
 
-					<option class="woocs_option_img_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $key ); ?>" <?php selected( $this->current_currency, $key ); ?> data-imagesrc="
-					<?php
-					if ( $show_flags ) {
-						echo esc_attr( ( ! empty( $currency['flag'] ) ? $currency['flag'] : $empty_flag ) );}
-					?>
-					" data-icon="
-					<?php
-					if ( $show_flags ) {
-						echo esc_attr( ( ! empty( $currency['flag'] ) ? $currency['flag'] : $empty_flag ) );}
-					?>
-" data-description="<?php echo esc_attr( $currency['description'] ); ?>"><?php echo esc_html( $option_txt ); ?></option>
+				<?php
+				// Keep attributes on one line: whitespace inside them makes ddslick render an empty <img>
+				$flag_src = $show_flags ? ( ! empty( $currency['flag'] ) ? $currency['flag'] : $empty_flag ) : '';
+				?>
+				<option class="woocs_option_img_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $key ); ?>" <?php selected( $this->current_currency, $key ); ?> data-imagesrc="<?php echo esc_attr( $flag_src ); ?>" data-icon="<?php echo esc_attr( $flag_src ); ?>" data-description="<?php echo esc_attr( $currency['description'] ); ?>"><?php echo esc_html( $option_txt ); ?></option>	
+				
 				<?php endforeach; ?>
 			</select>
 			<div class="woocs_display_none" style="display: none;" >FOX v.<?php echo esc_html( WOOCS_VERSION ); ?></div>
