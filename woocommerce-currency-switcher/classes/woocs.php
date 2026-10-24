@@ -3308,6 +3308,16 @@ final class WOOCS {
 		return $price_html;
 	}
 
+	/**
+	 * Requests a page cache never stores: admin-ajax, wc-ajax endpoints and the REST API.
+	 * Their output is rendered for the visitor's own currency, so prices in it need
+	 * no preloader and no redraw. wp_doing_ajax() alone is not enough: WooCommerce defines
+	 * DOING_AJAX for ?wc-ajax= requests only on 'init', after FOX is constructed.
+	 */
+	public function is_uncacheable_request() {
+		return wp_doing_ajax() || ! empty( $_GET['wc-ajax'] ) || ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+	}
+
 	public function woocommerce_price_html( $price_html, $product ) {
 
 		if ( $price_html == '' ) {
@@ -3333,10 +3343,15 @@ final class WOOCS {
 		if ( ! empty( $customer_price_format ) ) {
 
 			$classes = 'woocs_price_code';
-			if ( $this->shop_is_cached and $this->shop_is_cached_preloader ) {
+			$live    = '';
+			if ( $this->is_uncacheable_request() ) {
+				// rendered per visitor, never cached: front.js does not redraw prices marked so
+				$live = ' data-live="1"';
+			} elseif ( $this->shop_is_cached and $this->shop_is_cached_preloader ) {
 				$classes .= ' woocs_preloader_ajax';
 			}
-			$txt        = '<span class="' . $classes . '" data-currency="' . $fixed_currency . '" data-redraw-id="' . uniqid() . '"  data-product-id="' . $product_id . '">' . $customer_price_format . '</span>';
+			// data-price-currency: the currency this markup is rendered in; a page cache can carry it to a visitor of another currency
+			$txt        = '<span class="' . $classes . '" data-currency="' . $fixed_currency . '" data-redraw-id="' . uniqid() . '"  data-product-id="' . $product_id . '" data-price-currency="' . esc_attr( $this->current_currency ) . '"' . $live . '>' . $customer_price_format . '</span>';
 			$txt        = str_replace( '__PRICE__', $price_html, $txt );
 			$price_html = str_replace( '__CODE__', '<span class="woocs_price_code">' . $this->current_currency . '</span>', $txt );
 			$price_html = apply_filters( 'woocs_price_html_tail', $price_html );
@@ -3346,7 +3361,7 @@ final class WOOCS {
 		if ( ! in_array( $this->current_currency, $this->no_cents ) ) {
 			$sep   = wc_get_price_decimal_separator();
 			$zeros = str_repeat( '[0-9]', $this->get_currency_price_num_decimals( $this->current_currency ) );
-			if ( $currencies[ $this->current_currency ]['hide_cents'] == 1 ) {
+			if ( isset( $currencies[ $this->current_currency ]['hide_cents'] ) && $currencies[ $this->current_currency ]['hide_cents'] == 1 ) {
 				$price_html = preg_replace( "/\\{$sep}{$zeros}/", '', $price_html );
 			}
 		}
@@ -4152,9 +4167,10 @@ final class WOOCS {
 				wp_die( json_encode( array() ) );
 			}
 
+			$products_currency = array();
 			if ( isset( $_REQUEST['products_currency'] ) ) {
 				$products_currency = wc_clean( $_REQUEST['products_currency'] );
-				if ( ! array( $products_currency ) ) {
+				if ( ! is_array( $products_currency ) ) {
 					$products_currency = array();
 				}
 			}
@@ -4177,7 +4193,9 @@ final class WOOCS {
 					}
 
 					$product = wc_get_product( $p_id );
-					if ( is_object( $product ) && $product->get_status() === 'publish' && $product->is_visible() ) {
+					// Published products hidden from the catalog are redrawn too: Composite Products and
+					// Product Bundles show such products as options, and their price is public anyway.
+					if ( is_object( $product ) && $product->get_status() === 'publish' && ( $product->is_visible() || 'hidden' === $product->get_catalog_visibility() ) ) {
 						$result[ $k_id ] = $product->get_price_html();
 					}
 

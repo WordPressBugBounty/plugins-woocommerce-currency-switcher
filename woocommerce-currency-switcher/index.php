@@ -4,7 +4,7 @@
 	Plugin URI: https://currency-switcher.com/
 	Description: Currency Switcher for WooCommerce that allows to the visitors and customers on your woocommerce store site switch currencies and optionally apply selected currency on checkout
 	Author: realmag777
-	Version: 1.5.5
+	Version: 1.5.6
 	Requires at least: 6.0
 	Tested up to: 7.1
 	Requires PHP: 7.4
@@ -60,6 +60,32 @@ if ( isset( $_SERVER['SCRIPT_URI'] ) ) {
 	}
 }
 
+//+++
+
+// WooCommerce REST API (wc/v1, wc/v2, wc/v3) always works in the shop base currency.
+// The SCRIPT_URI check above never fires on nginx, so match the route directly here.
+// Store API (wc/store) and other namespaces are not affected.
+$woocs_rest_route = '';
+if ( isset( $_GET['rest_route'] ) && is_string( $_GET['rest_route'] ) ) {
+	$woocs_rest_route = wp_unslash( $_GET['rest_route'] );
+} elseif ( isset( $_SERVER['REQUEST_URI'] ) && function_exists( 'rest_get_url_prefix' ) ) {
+	$woocs_path   = (string) wp_parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH );
+	$woocs_prefix = '/' . trim( rest_get_url_prefix(), '/' ) . '/';
+	$woocs_pos    = strpos( $woocs_path, $woocs_prefix );
+	if ( false !== $woocs_pos ) {
+		$woocs_rest_route = substr( $woocs_path, $woocs_pos + strlen( $woocs_prefix ) - 1 );
+	}
+}
+
+if ( $woocs_rest_route && preg_match( '~^/wc/v\d+/~', $woocs_rest_route ) ) {
+	$woocs_rest_extra = array_filter( array_map( 'trim', explode( ',', (string) get_option( 'woocs_rest_allow_namespaces', '' ) ) ) );
+	if ( ! in_array( 'wc', $woocs_rest_extra, true ) ) {
+		return; // the WooCommerce REST API must return prices in the base currency
+	}
+}
+unset( $woocs_rest_route, $woocs_path, $woocs_prefix, $woocs_pos, $woocs_rest_extra );
+
+//+++
 
 if ( defined( 'DOING_AJAX' ) ) {
 
@@ -101,7 +127,7 @@ if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 	}
 }
 
-define( 'WOOCS_VERSION', '1.5.5' );
+define( 'WOOCS_VERSION', '1.5.6' );
 // define('WOOCS_VERSION', uniqid('woocs-'));//for dev test purposes to reset browser cache
 define( 'WOOCS_MIN_WOOCOMMERCE', '6.0' );
 define( 'WOOCS_PATH', plugin_dir_path( __FILE__ ) );
@@ -124,7 +150,7 @@ require_once WOOCS_PATH . 'classes/compatibility/compatibility.php';
 require_once WOOCS_PATH . 'classes/woocs_hpos.php';
 require_once WOOCS_PATH . 'classes/world_currencies.php';
 
-// 09-10-2026 - dd-mm-YYYY
+// 24-10-2026 - dd-mm-YYYY
 class WOOCS_STARTER {
 
 	private $default_woo_version   = 6.0;
@@ -421,6 +447,11 @@ add_action(
 function woocs_validate_currency( $currency ) {
 	global $WOOCS;
 	$currency      = strtoupper( sanitize_text_field( $currency ) );
+	if ( ! is_object( $WOOCS ) ) {
+		// FOX is not loaded in this request (WooCommerce REST API wc/vN, excluded
+		// REST namespaces): only the shop base currency is valid here
+		return strtoupper( (string) get_option( 'woocommerce_currency' ) );
+	}
 	$currencies    = $WOOCS->get_currencies();
 	$currency_keys = array_map( 'strtoupper', array_keys( $currencies ) );
 	if ( in_array( $currency, $currency_keys ) ) {
@@ -590,4 +621,60 @@ if ( ! function_exists( 'woocs_is_admin_order_edit_context' ) ) {
 
 		return false;
 	}
+}
+
+
+if ( ! function_exists( 'woocs_webhook_base_currency_on' ) ){
+
+	// Webhook payloads are built in the base currency. Delivery runs in a background
+	// request that may carry a random visitor's cookies, and therefore that visitor's
+	// selected currency. Conversion is switched off only while the payload is built.
+	function woocs_webhook_base_currency_on() {
+		global $WOOCS;
+		$_REQUEST['woocs_block_price_hook'] = 1;
+		if ( is_object( $WOOCS ) ) {
+			// fixed per-currency prices read current_currency directly
+			$GLOBALS['woocs_webhook_prev_currency'] = $WOOCS->current_currency;
+			$WOOCS->current_currency                = $WOOCS->default_currency;
+		}
+	}
+
+	function woocs_webhook_base_currency_off() {
+		global $WOOCS;
+		unset( $_REQUEST['woocs_block_price_hook'] );
+		if ( is_object( $WOOCS ) && isset( $GLOBALS['woocs_webhook_prev_currency'] ) ) {
+			$WOOCS->current_currency = $GLOBALS['woocs_webhook_prev_currency'];
+			unset( $GLOBALS['woocs_webhook_prev_currency'] );
+		}
+	}
+
+	// async delivery through Action Scheduler (WooCommerce default)
+	add_action( 'woocommerce_deliver_webhook_async', 'woocs_webhook_base_currency_on', 1 );
+	add_action( 'woocommerce_deliver_webhook_async', 'woocs_webhook_base_currency_off', 999 );
+	// synchronous delivery (when async delivery is disabled on the site)
+	// Since WooCommerce 4.4 woocommerce_webhook_process_delivery only queues the
+	// webhook: wc_webhook_execute_queue() delivers it later, on 'shutdown'. There it
+	// applies woocommerce_webhook_deliver_async and, when that is false, calls
+	// WC_Webhook::deliver(), which starts with build_payload(). The base currency is
+	// switched on at that point and back off when build_payload() returns its data
+	// through the woocommerce_webhook_payload filter.
+	function woocs_webhook_sync_delivery_on( $async, $webhook = null ) {
+		// only the call made by wc_webhook_execute_queue() right before delivery
+		if ( ! $async && doing_action( 'shutdown' ) && $webhook instanceof WC_Webhook ) {
+			woocs_webhook_base_currency_on();
+			$GLOBALS['woocs_webhook_sync_on'] = true;
+		}
+		return $async;
+	}
+
+	function woocs_webhook_sync_payload_built( $payload ) {
+		if ( ! empty( $GLOBALS['woocs_webhook_sync_on'] ) ) {
+			unset( $GLOBALS['woocs_webhook_sync_on'] );
+			woocs_webhook_base_currency_off();
+		}
+		return $payload;
+	}
+
+	add_filter( 'woocommerce_webhook_deliver_async', 'woocs_webhook_sync_delivery_on', PHP_INT_MAX, 2 );
+	add_filter( 'woocommerce_webhook_payload', 'woocs_webhook_sync_payload_built', PHP_INT_MAX );
 }

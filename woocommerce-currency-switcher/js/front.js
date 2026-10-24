@@ -244,6 +244,8 @@ jQuery(function ($) {
     if (typeof woocs_shop_is_cached !== 'undefined') {
         if (woocs_shop_is_cached) {
 
+            woocs_late_prices_watch();
+
             setTimeout(function () {
 
                 woocs_sumbit_currency_changing = false;
@@ -336,6 +338,7 @@ jQuery(function ($) {
                     //if no prices on the page - do nothing
                     if (Object.keys(products_ids).length === 0) {
                         woocs_sumbit_currency_changing = true;
+                        woocs_late_prices_ready('');
                         return;
                     }
 
@@ -356,6 +359,8 @@ jQuery(function ($) {
 
                         if (jQuery.isEmptyObject(data)) {
                             woocs_sumbit_currency_changing = true;
+                            //the server answers empty when the page was rendered in the visitor currency
+                            woocs_late_prices_ready(woocs_late_prices.page_currency);
                         }
                         if (!jQuery.isEmptyObject(data)) {
                             jQuery('.woocs_price_info').remove();
@@ -433,13 +438,18 @@ jQuery(function ($) {
                             document.dispatchEvent(new CustomEvent('after_woocs_get_products_price_html', {detail: {
                                     current_currency: data.current_currency
                                 }}));
+
+                            woocs_late_prices_ready(data.current_currency);
                         }
 
+                    }).fail(function () {
+                        woocs_late_prices_ready('');
                     });
 
                 } else {
                     woocs_sumbit_currency_changing = true;
-
+                    //the currency came in the URL: such a page is rendered for it, not taken from the cache
+                    woocs_late_prices_ready(woocs_late_prices.page_currency);
                 }
                 jQuery(".single_variation_wrap").on("show_variation", function (event, variation) {
                     jQuery('.woocs_price_code').removeClass('woocs_preloader_ajax');
@@ -607,6 +617,193 @@ function woocs_redirect(currency) {
         }
 
     }
+}
+
+//+++
+//Cache mode: prices inserted into the page after the first redraw pass (Composite Products options,
+//Product Bundles, quick views, AJAX fragments) are not part of that pass. Their markup may come from a
+//page cache, so it may carry the preloader class and be in another currency than the visitor uses.
+//Watch for them and, as soon as they appear, either just clear the preloader (the markup is already in
+//the visitor currency) or redraw them in the visitor currency.
+var woocs_late_prices = {
+    pending: true, //until the first redraw pass answers
+    visitor_currency: '', //'' while unknown
+    page_currency: '', //the currency the page markup was rendered in
+    queue: [],
+    html: {}, //redraw-id => price html already received from the server
+    timer: null,
+    busy: false
+};
+
+function woocs_late_prices_watch() {
+    if (typeof woocs_current_currency !== 'undefined' && woocs_current_currency) {
+        woocs_late_prices.page_currency = woocs_current_currency['name'];
+    }
+
+    if (typeof MutationObserver === 'undefined') {
+        return;
+    }
+
+    new MutationObserver(function (mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+            for (var j = 0; j < mutations[i].addedNodes.length; j++) {
+                if (mutations[i].addedNodes[j].nodeType === 1) {
+                    woocs_late_prices_take(mutations[i].addedNodes[j]);
+                }
+            }
+        }
+    }).observe(document.documentElement, {childList: true, subtree: true});
+}
+
+//the currency a price markup was rendered in; markup cached before data-price-currency existed
+//is taken as rendered in the page currency
+function woocs_late_prices_currency(el) {
+    return el.getAttribute('data-price-currency') || woocs_late_prices.page_currency;
+}
+
+function woocs_late_prices_take(node) {
+    var found = node.classList.contains('woocs_price_code') ? [node] : node.getElementsByClassName('woocs_price_code');
+    if (!found.length) {
+        return;
+    }
+
+    found = Array.prototype.slice.call(found);
+    for (var i = 0; i < found.length; i++) {
+        var el = found[i];
+        var redraw_id = el.getAttribute('data-redraw-id');
+        //data-live: rendered by AJAX for this visitor, nothing to redraw
+        var redrawable = redraw_id && el.getAttribute('data-product-id') && !el.hasAttribute('data-live');
+        var visitor = woocs_late_prices.visitor_currency;
+
+        if (!redrawable || (visitor && woocs_late_prices_currency(el) === visitor)) {
+            //no request needed: cleared synchronously, before the browser paints the spinner
+            el.classList.remove('woocs_preloader_ajax');
+        } else if (visitor && typeof woocs_late_prices.html[redraw_id] !== 'undefined') {
+            //the same cached markup inserted again, for example a Composite option chosen twice
+            jQuery(el).replaceWith(woocs_late_prices.html[redraw_id]);
+        } else {
+            woocs_late_prices.queue.push(el);
+        }
+    }
+
+    woocs_late_prices_schedule();
+}
+
+//called by the first redraw pass with the visitor currency, or with '' when it could not tell
+function woocs_late_prices_ready(visitor_currency) {
+    woocs_late_prices.pending = false;
+    if (visitor_currency) {
+        woocs_late_prices.visitor_currency = visitor_currency;
+    }
+    woocs_late_prices_schedule();
+}
+
+function woocs_late_prices_schedule() {
+    //while the first redraw pass is running it handles what is on the page, so late prices wait for it
+    if (woocs_late_prices.pending || woocs_late_prices.timer || !woocs_late_prices.queue.length) {
+        return;
+    }
+
+    //short debounce: one request for all prices a plugin inserts in one go
+    woocs_late_prices.timer = setTimeout(woocs_late_prices_flush, 30);
+}
+
+function woocs_late_prices_flush() {
+    woocs_late_prices.timer = null;
+    if (woocs_late_prices.busy) {
+        return; //called again when the running request completes
+    }
+
+    var visitor = woocs_late_prices.visitor_currency;
+    var groups = {}; //rendered currency => elements
+    var group_currency = '';
+    for (var i = 0; i < woocs_late_prices.queue.length; i++) {
+        var el = woocs_late_prices.queue[i];
+        //removed from the page meanwhile, for example replaced by the first redraw pass
+        if (!document.documentElement.contains(el)) {
+            continue;
+        }
+        var currency = woocs_late_prices_currency(el);
+        if (visitor && currency === visitor) {
+            el.classList.remove('woocs_preloader_ajax');
+            continue;
+        }
+        if (!groups[currency]) {
+            groups[currency] = [];
+        }
+        if (groups[currency].indexOf(el) === -1) {
+            groups[currency].push(el);
+        }
+        group_currency = currency;
+    }
+    woocs_late_prices.queue = [];
+
+    if (!group_currency) {
+        return;
+    }
+
+    //one request per rendered currency, normally there is only one; the rest waits for the next round
+    var items = groups[group_currency];
+    for (var c in groups) {
+        if (c !== group_currency) {
+            woocs_late_prices.queue = woocs_late_prices.queue.concat(groups[c]);
+        }
+    }
+
+    var clear = function (list) {
+        for (var i = 0; i < list.length; i++) {
+            list[i].classList.remove('woocs_preloader_ajax');
+        }
+    };
+
+    var products_ids = {};
+    var products_currency = {};
+    for (var i = 0; i < items.length; i++) {
+        var redraw_id = items[i].getAttribute('data-redraw-id');
+        products_ids[redraw_id] = items[i].getAttribute('data-product-id');
+        if (items[i].getAttribute('data-currency')) {
+            products_currency[redraw_id] = items[i].getAttribute('data-currency');
+        }
+    }
+
+    woocs_late_prices.busy = true;
+    jQuery.post(woocs_ajaxurl, {
+        action: "woocs_get_products_price_html",
+        products_ids: products_ids,
+        products_currency: products_currency,
+        current_currency: group_currency
+    }, function (data) {
+        if (typeof data === 'string') {
+            data = JSON.parse(data);
+        }
+
+        //empty answer: this markup is already in the visitor currency
+        if (jQuery.isEmptyObject(data) || typeof data.ids === 'undefined') {
+            woocs_late_prices.visitor_currency = group_currency;
+            clear(items);
+            return;
+        }
+
+        woocs_late_prices.visitor_currency = data.current_currency;
+        for (var i = 0; i < items.length; i++) {
+            var redraw_id = items[i].getAttribute('data-redraw-id');
+            if (typeof data.ids[redraw_id] !== 'undefined') {
+                //the answer is rendered by AJAX (data-live, no preloader), the replace is a guard against a loop
+                woocs_late_prices.html[redraw_id] = String(data.ids[redraw_id]).replace(/\bwoocs_preloader_ajax\b/g, '');
+                if (document.documentElement.contains(items[i])) {
+                    jQuery(items[i]).replaceWith(woocs_late_prices.html[redraw_id]);
+                }
+            } else {
+                items[i].classList.remove('woocs_preloader_ajax');
+            }
+        }
+    }).fail(function () {
+        //never leave a spinner forever
+        clear(items);
+    }).always(function () {
+        woocs_late_prices.busy = false;
+        woocs_late_prices_schedule();
+    });
 }
 
 function woocs_refresh_mini_cart(delay) {

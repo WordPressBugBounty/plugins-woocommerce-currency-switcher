@@ -5,7 +5,7 @@ Tags: woocommerce, currency, switcher, currency switcher, converter
 Requires at least: 4.9.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -186,7 +186,7 @@ Q: More FAQ answers?
 R: [FAQ](https://currency-switcher.com/faq/)
 
 Q: Premium version?
-R: FOX Professional is available at https://currency-switcher.com/downloads — use coupon code FOXWP30 for 30% off. The discount applies to every renewal, not just the first payment, so your rate stays the same for as long as your license is active.
+R: FOX Professional is available [on the plugin site](https://currency-switcher.com/downloads) — use coupon code FOXWP30 for 30% off. The discount applies to every renewal, not just the first payment, so your rate stays the same for as long as your license is active.
 
 Q: Where can I send security bug report about the plugin?
 R: You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/woocommerce-currency-switcher)
@@ -197,6 +197,15 @@ R: You can report security bugs through the Patchstack Vulnerability Disclosure 
 
 
 == Changelog ==
+
+= 1.5.6 - 24 October, 2026 =
+* Fix: WooCommerce REST API responses (wc/v1, wc/v2, wc/v3) now always use the shop base currency, on nginx servers and with ?rest_route= links too. Before, on nginx the API could return prices converted to the currency of another visitor, which broke syncing with POS and ERP systems
+* Fix: WooCommerce webhook payloads (product.updated and others) are now always built in the shop base currency, for both background and immediate delivery. Before, a webhook could carry prices in the currency selected by a visitor who was on the site at that moment
+* Fix: with "I am using cache plugin on my site" and the prices preloader on, prices that appear on the page after it loads (Composite Products options, quick views, AJAX fragments) no longer keep the loading spinner forever and are shown in the visitor currency
+* Fix: Composite Products on a cached page now shows component prices and the composite total in the visitor currency, the same amount as in the cart
+* Fix: prices in WooCommerce AJAX and REST responses no longer get the loading spinner
+* Fix: prices of published products hidden from the catalog (typical Composite Products and Product Bundles options) are now converted on cached pages too
+* New: the currency code from the FOX price format (__CODE__) is now shown in Composite Products drop-down option labels and in the composite total
 
 = 1.5.5 - 09 October, 2026 =
 * Security fix. Thanks to Je22y for the responsible disclosure and to Patchstack for coordinating it
